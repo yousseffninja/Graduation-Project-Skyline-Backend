@@ -58,9 +58,19 @@ const userSchema = new mongoose.Schema({
       message: 'Passwords are not the same!'
     }
   },
+  address: {
+    type: String,
+  },
+  emailActive: {
+    type: Boolean,
+    default: false,
+    select: false
+  },
   passwordChangedAt: Date,
   passwordResetToken: String,
   passwordResetExpires: Date,
+  emailVerificationToken: String,
+  emailVerificationTokenExpired: Date,
   active: {
     type: Boolean,
     default: true,
@@ -117,6 +127,21 @@ userSchema.methods.createPasswordResetToken = function() {
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
   return resetToken;
+};
+
+userSchema.methods.createEmailVerificationToken = function() {
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+
+  this.emailVerificationToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+
+  console.log({ verificationToken }, this.emailVerificationToken);
+
+  this.emailVerificationTokenExpired = Date.now() + 10 * 60 * 1000;
+
+  return verificationToken;
 };
 
 const User = mongoose.model('User', userSchema);
