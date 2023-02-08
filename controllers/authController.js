@@ -41,8 +41,34 @@ exports.signup = catchAsync(async (req, res, next) => {
     birthDate: req.body.birthDate,
     password: req.body.password,
     passwordConfirm: req.body.passwordConfirm
-  });
-  createSendToken(newUser, 201, res);
+  })
+
+  const verificationToken = newUser.createEmailVerificationToken();
+  await newUser.save({ validateBeforeSave: false });
+  const verificationURL = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/users/verify/${verificationToken}`;
+  const message = `You can verify your email by this link: ${verificationURL}.\nWish all best with our website :)`;
+
+  try {
+    await sendEmail({
+      email: newUser.email,
+      subject: 'Your verification email token (valid for 10 min)',
+      message
+    });
+
+    createSendToken(newUser, 201, res);
+  } catch (err) {
+    console.log(err)
+    newUser.emailVerificationToken = undefined;
+    newUser.emailVerificationTokenExpired = undefined;
+    await newUser.save({ validateBeforeSave: false });
+
+    return next(
+      new AppError('There was an error sending the email. Try again later!'),
+      500
+    );
+  }
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -87,15 +113,15 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   const currentUser = await User.findById(decoded.id);
   if (!currentUser) {
-    if(!currentUser.emailActive){
-      return next(new AppError('Email not activated, Please active your email', 401))
-    }
     return next(
       new AppError(
         'The user belonging to this token does no longer exist.',
         401
       )
     );
+  }
+  if(!currentUser.emailActive){
+    return next(new AppError('Email not activated, Please active your email', 401))
   }
   if (currentUser.changedPasswordAfter(decoded.iat)) {
     return next(
@@ -211,5 +237,25 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   user.passwordConfirm = req.body.passwordConfirm;
   await user.save();
 
+  createSendToken(user, 200, res);
+});
+
+exports.verifyEmail = catchAsync(async (req, res, next) => {
+  const hashedToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOneAndUpdate({
+    emailVerificationToken: hashedToken,
+    emailVerificationTokenExpired: { $gt: Date.now() }
+  },{
+    emailActive: true,
+    emailVerificationToken: undefined,
+    emailVerificationTokenExpired: undefined,
+  });
+  if (!user) {
+    return next(new AppError('Token is invalid or has expired', 400));
+  }
   createSendToken(user, 200, res);
 });

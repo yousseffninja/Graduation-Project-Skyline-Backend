@@ -93,6 +93,7 @@ userSchema.pre('save', function(next) {
 
 userSchema.pre(/^find/, function(next) {
   this.find({ active: { $ne: false } });
+
   next();
 });
 
