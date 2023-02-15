@@ -12,7 +12,10 @@ router.post('/login', authController.login);
 router.get('/logout', authController.logout);
 
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }))
-router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), authController.googleAuth)
+router.get('/auth/google/callback', passport.authenticate('google', { failureRedirect: '/login' }), authController.googleOrGoogleAuth)
+
+router.get('/auth/facebook', passport.authenticate('facebook', { scope: 'email' }))
+router.get('/auth/facebook/callback', passport.authenticate('facebook', { failureRedirect: '/login' }), authController.googleOrGoogleAuth)
 
 router.post('/forgotPassword', authController.forgotPassword);
 router.patch('/resetPassword/:token', authController.resetPassword);

@@ -34,6 +34,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 require('./utils/googleOAuth20')(passport);
+require('./utils/facebookAuth')(passport);
 
 app.use(session({
   secret: 'keyboard car',

@@ -83,12 +83,12 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
-exports.googleAuth = catchAsync(async (req, res, next) => {
-  const googleUser = await User.find({ email: req.user.email })
-  if (!googleUser) {
+exports.googleOrGoogleAuth = catchAsync(async (req, res, next) => {
+  const plateformUser = await User.find({ email: req.user.email })
+  if (!plateformUser) {
     return next(new AppError('Email does not exist! please sign up again', 401));
   }
-  createSendToken(googleUser, 200, res)
+  createSendToken(plateformUser, 200, res)
 });
 
 exports.logout = (req, res) => {
