@@ -16,8 +16,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide your email !'],
     unique: [true, 'This username is used, Please try another one!'],
-    minLength: [3, 'Please provide username with 3 letter or more and 20 letter or less'],
-    maxLength: [20, 'Please provide username with 3 letter or more and 20 letter or less'],
+    minLength: [3, 'Please provide username with 3 letter or more and 35 letter or less'],
+    maxLength: [35, 'Please provide username with 3 letter or more and 35 letter or less'],
   },
   email: {
     type: String,
@@ -26,9 +26,19 @@ const userSchema = new mongoose.Schema({
     lowercase: true,
     validate: [validator.isEmail, 'Please provide a valid email']
   },
+  phone: {
+    type: String,
+    validate: {
+      validator: function(v) {
+        const re = /^\d{10}$/;
+        return (!v || !v.trim().length) || re.test(v)
+      },
+      message: 'Provided phone number is invalid.'
+    }
+  },
   birthDate: {
     type: Date,
-    required: [true, 'Please provide your birthdate']
+    // required: [true, 'Please provide your birthdate']
   },
   userPhoto: {
     type: String,
@@ -65,6 +75,9 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
     select: false
+  },
+  googleId: {
+    type: String,
   },
   passwordChangedAt: Date,
   passwordResetToken: String,

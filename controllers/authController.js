@@ -83,6 +83,14 @@ exports.login = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+exports.googleAuth = catchAsync(async (req, res, next) => {
+  const googleUser = await User.find({ email: req.user.email })
+  if (!googleUser) {
+    return next(new AppError('Email does not exist! please sign up again', 401));
+  }
+  createSendToken(googleUser, 200, res)
+});
+
 exports.logout = (req, res) => {
   res.cookie('jwt', 'loggedout', {
     expires: new Date(Date.now() + 10 * 1000),
