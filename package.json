@@ -33,6 +33,7 @@
     "passport-google-oauth20": "^2.0.0",
     "path": "^0.12.7",
     "slugify": "^1.6.5",
+    "twilio": "^4.7.2",
     "validator": "^13.9.0",
     "xss-clean": "^0.1.1"
   },

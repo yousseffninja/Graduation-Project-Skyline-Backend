@@ -4,6 +4,7 @@ const passport = require('passport')
 const authController = require('../controllers/authController');
 const userController = require('../controllers/userController');
 const upload = require('../utils/multer');
+const twilio = require('./../utils/twilio-sms');
 
 const router = express.Router();
 
@@ -24,5 +25,8 @@ router.patch('/verify/:token', authController.verifyEmail)
 router.use(authController.protect);
 
 router.patch('/uploadeMyPhoto', upload.single('image') , userController.uploadPersonalPhoto);
+
+router.post('/phone/send-otp', twilio.sendOTP);
+router.post('/phone/verify-otp', twilio.verifyOTP);
 
 module.exports = router;
