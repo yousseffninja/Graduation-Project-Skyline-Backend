@@ -29,4 +29,21 @@ router.patch('/uploadeMyPhoto', upload.single('image') , userController.uploadPe
 router.post('/phone/send-otp', twilio.sendOTP);
 router.post('/phone/verify-otp', twilio.verifyOTP);
 
+router.patch('/updateMyPassword', authController.updatePassword);
+router.get('/me', userController.getMe, userController.getUser);
+router.patch('/updateMe', userController.updateMe);
+router.delete('/deleteMe', userController.deleteMe);
+
+router.use(authController.restrictTo('admin'));
+
+router
+  .route('/')
+  .get(userController.getAllUsers)
+
+router
+  .route('/:id')
+  .get(userController.getUser)
+  .patch(userController.updateUser)
+  .delete(userController.deleteUser);
+
 module.exports = router;
