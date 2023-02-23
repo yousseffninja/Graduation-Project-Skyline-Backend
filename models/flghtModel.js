@@ -13,7 +13,10 @@ const flightSchema = new mongoose.Schema({
   classes: {
     type: String,
     required: [true, 'Please provide flight class!'],
-    enum: ['CLass A', ' Class B', 'Class C'],
+    enum: {
+      values: ['Class A', 'Class B', 'Class C'],
+      message: 'Type must be Class A, Class B, Class C',
+    },
   },
   rating: {
     type: Number,

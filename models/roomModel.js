@@ -4,7 +4,10 @@ const RoomSchema = new mongoose.Schema({
   type: {
     type: String,
     required: [true, 'Please Provide the type of Room'],
-    enum: ['Single', 'Double', 'Triple'],
+    enum: {
+      values: ['Single', 'Double', 'Triple'],
+      message: 'Type must be Single, Double or Triple',
+    },
   },
   price: {
     type: Number,
