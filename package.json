@@ -32,7 +32,9 @@
     "passport-facebook": "^3.0.0",
     "passport-google-oauth20": "^2.0.0",
     "path": "^0.12.7",
+    "slug": "^8.2.2",
     "slugify": "^1.6.5",
+    "stripe": "^11.11.0",
     "twilio": "^4.7.2",
     "validator": "^13.9.0",
     "xss-clean": "^0.1.1"

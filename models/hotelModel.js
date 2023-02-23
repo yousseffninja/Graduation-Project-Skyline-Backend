@@ -8,7 +8,10 @@ const HotelSchema = new mongoose.Schema({
   type: {
     type: String,
     required: [true, 'Please provide hotel name !'],
-    enum: ['Class A', 'Class B', 'Class C'],
+    enum: {
+      values: ['Class A', 'Class B', 'Class C'],
+      message: 'Type must be Class A, Class B, Class C',
+    },
   },
   city: {
     type: String,
@@ -19,13 +22,21 @@ const HotelSchema = new mongoose.Schema({
     required: [true, 'Please Provide the room details'],
   },
   rooms: {
-    type: Array,
+    type: [
+      {
+        type: mongoose.Schema.ObjectId,
+        ref: 'room'
+      }
+    ],
     required: [true, 'Please Provide the room details'],
   },
   description: {
     type: String,
     required: [true, 'Please Provide the hotel description'],
   }
+},{
+  toJSON: { virtuals: true },
+  toObject: { virtuals: true }
 });
 
 const Hotel = mongoose.model('hotel', HotelSchema);
