@@ -82,4 +82,3 @@ exports.getAll = Model =>
       data: doc
     });
   });
-//
