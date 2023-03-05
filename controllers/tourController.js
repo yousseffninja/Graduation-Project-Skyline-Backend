@@ -1,9 +1,11 @@
-const multer = require('multer');
-const sharp = require('sharp');
+// const sharp = require('sharp');
+const path = require('path');
+const cloudinary = require('../utils/cloudinary');
 const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
 const factory = require('./handlerFactory');
-const AppError = require('./../utils/appError');
+const User = require('../models/userModel');
+// const AppError = require('./../utils/appError');
 
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = '5';
@@ -11,6 +13,50 @@ exports.aliasTopTours = (req, res, next) => {
   req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
   next();
 };
+
+exports.uploadTourCover = catchAsync(async (req, res, next) => {
+  const tour = await Tour.findById(req.params.id)
+  const result = await cloudinary.uploader.upload(req.file.path, {
+    public_id: `/${tour.name}/${tour.name}-cover`,
+    folder: 'tours',
+    resource_type: 'image',
+  });
+  await Tour.findByIdAndUpdate(req.params.id, {
+    imageCover: {
+      userPhoto: result.secure_url,
+      cloudinaryId: result.public_id,
+    },
+  });
+  res.status(201).json({
+    status: 'success',
+  });
+})
+
+exports.uploadTourImages = catchAsync(async (req, res, next) => {
+  const tour = await Tour.findById(req.params.id);
+  const images = tour.images
+  let pictureFiles = req.files;
+  pictureFiles.map(async (picture, i) => {
+
+    const result = await cloudinary.uploader.upload(picture.path, {
+      public_id: `/${tour.name}/tour-${tour.name}-${Date.now()}-image-${i}`,
+      folder: 'tours',
+      resource_type: 'image'
+    })
+    images.push({
+      tourPhoto: result.secure_url,
+      cloudinaryId: result.public_id,
+    })
+    await Tour.findByIdAndUpdate(req.params.id, {
+      images: images
+    });
+  });
+
+  res.status(201).json({
+    status: 'success',
+
+  });
+});
 
 exports.getAllTours = factory.getAll(Tour);
 exports.getTour = factory.getOne(Tour, { path: 'reviews' });

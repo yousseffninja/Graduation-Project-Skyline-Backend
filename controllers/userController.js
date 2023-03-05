@@ -52,19 +52,20 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
 });
 
 exports.uploadPersonalPhoto = catchAsync(async (req, res, next) => {
-  try {
-    const result = await cloudinary.uploader.upload(req.file.path);
-    const updatedUser =  await User.findByIdAndUpdate(req.user.id, {
-      userPhoto: result.secure_url,
-      cloudinaryId: result.public_id,
-    })
-    res.status(201).json({
-      status: 'success',
-      updatedUser
-    })
-  } catch (e) {
-
-  }
+  const user = await User.findById(req.user.id)
+  const result = await cloudinary.uploader.upload(req.file.path, {
+    public_id: `/${user.username}/${user.username}PersonalPhoto`,
+    folder: 'users',
+    resource_type: 'image',
+  });
+  const updatedUser =  await User.findByIdAndUpdate(req.user.id, {
+    userPhoto: result.secure_url,
+    cloudinaryId: result.public_id,
+  });
+  res.status(201).json({
+    status: 'success',
+    updatedUser
+  });
 });
 
 exports.getUser = factory.getOne(User);

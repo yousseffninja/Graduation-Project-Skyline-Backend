@@ -1,6 +1,7 @@
 const express = require('express');
 const tourController = require('./../controllers/tourController');
 const authController = require('./../controllers/authController');
+const upload = require('../utils/multer');
 // const reviewRouter = require('./../routes/reviewRoutes');
 
 const router = express.Router();
@@ -41,6 +42,24 @@ router
     authController.protect,
     authController.restrictTo('admin', 'lead-guide'),
     tourController.deleteTour
+  );
+
+router
+  .post(
+    '/uploadTourImages/:id',
+    upload.array('image'),
+    authController.protect,
+    authController.restrictTo('admin', 'lead-guide'),
+    tourController.uploadTourImages
+  );
+
+router
+  .post(
+    '/uploadTourCover/:id',
+    upload.single('image'),
+    authController.protect,
+    authController.restrictTo('admin', 'lead-guide'),
+    tourController.uploadTourCover
   );
 
 module.exports = router;
