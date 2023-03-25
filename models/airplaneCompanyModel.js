@@ -3,15 +3,18 @@ const mongoose = require('mongoose')
 const AirplaneCompanySchema = new mongoose.Schema({
   airplaneName: {
     type: String,
-    require: [true, 'Please provide airplane company name!']
+    required: [true, 'Please provide airplane company name!']
+  },
+  description: {
+    type: String,
+    required: [true, 'Please provide airplane description'],
   },
   flights: {
     type: [{
       type: mongoose.Schema.ObjectId,
       ref: 'flights',
     }],
-    required: [true, 'Need som Flights !']
-  }
+  },
 },{
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

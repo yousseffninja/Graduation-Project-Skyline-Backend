@@ -5,6 +5,7 @@ const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
 const factory = require('./handlerFactory');
 const User = require('../models/userModel');
+const sharp = require('sharp');
 // const AppError = require('./../utils/appError');
 
 exports.aliasTopTours = (req, res, next) => {
@@ -16,6 +17,7 @@ exports.aliasTopTours = (req, res, next) => {
 
 exports.uploadTourCover = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.id)
+  
   const result = await cloudinary.uploader.upload(req.file.path, {
     public_id: `/${tour.name}/${tour.name}-cover`,
     folder: 'tours',
