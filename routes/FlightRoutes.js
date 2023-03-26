@@ -5,9 +5,9 @@ const authController = require('./../controllers/authController');
 const router = express.Router();
 
 router
+  .route('/')
   .get(flightController.getAllFlight)
   .post(
-    '/',
     authController.protect,
     authController.restrictTo('admin'),
     flightController.CreateFlight,
@@ -25,4 +25,6 @@ router
     authController.protect,
     authController.restrictTo('admin'),
     flightController.deleteFlight
-  )
+  );
+
+module.exports = router;
