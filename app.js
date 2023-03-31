@@ -8,6 +8,7 @@ const xss = require('xss-clean');
 const cookieParser = require('cookie-parser');
 const passport = require('passport');
 const session = require('express-session');
+const cors = require('cors');
 
 const AppError = require('./utils/appError');
 const globalErrorHandler = require('./controllers/errorController');
@@ -19,7 +20,9 @@ const airplaneCompanyRouter = require('./routes/airplaneCompanyRoutes');
 const flightsRouter = require('./routes/FlightRoutes');
 
 const app = express();
+
 app.enable('trust proxy');
+app.use(cors());
 app.use(helmet({
         crossOriginEmbedderPolicy: false,
         crossOriginResourcePolicy: {
