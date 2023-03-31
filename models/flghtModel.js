@@ -74,6 +74,9 @@ const flightSchema = new mongoose.Schema({
   date: {
     type: Date,
   },
+  sala: {
+    type: Number,
+  },
   // from: {
   //   type: {
   //     location: {
@@ -137,7 +140,12 @@ const flightSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'airplane_company',
     required: [true, 'Please provide ID of airplane company']
-  }
+  },
+    airplaneCompanyrecieve: {
+      type: mongoose.Schema.ObjectId,
+      ref: 'airplane_company',
+      required: [true, 'Please provide ID of airplane company']
+    }
 },
   {
     toJSON: { virtuals: true },
