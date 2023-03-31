@@ -23,14 +23,6 @@ const tourSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'A tour must have a group size']
     },
-    difficulty: {
-      type: String,
-      required: [true, 'A tour must have a difficulty'],
-      enum: {
-        values: ['easy', 'medium', 'difficult'],
-        message: 'Difficulty is either: easy, medium, difficult'
-      }
-    },
     ratingsAverage: {
       type: Number,
       // default: 4.5,
@@ -54,15 +46,6 @@ const tourSchema = new mongoose.Schema(
         },
         message: 'Discount price ({VALUE}) should be below regular price'
       }
-    },
-    summary: {
-      type: String,
-      trim: true,
-      required: [true, 'A tour must have a description']
-    },
-    description: {
-      type: String,
-      trim: true
     },
     imageCover: {
       type: Object,

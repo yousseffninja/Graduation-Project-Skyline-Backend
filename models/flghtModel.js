@@ -13,26 +13,67 @@ const flightSchema = new mongoose.Schema({
     }
   },
   Seats: {
-    type: [{
-      seatCode: {
-        type: String,
-        validate: {
-          validator: function(v) {
-            const re = /^[A-E]{1}[1-6]{1}$/;
-            return (!v || !v.trim().length) || re.test(v)
-          },
-          message: 'Please Provide A correct notation for Seats'
-        },
-      },
-      taken: {
-        type: Boolean,
-        default: false,
-      },
-      user: {
-        type: mongoose.Schema.ObjectId,
-        ref: 'User',
-      }
-    }],
+    type: Object,
+    default: {
+      Row1: [  //right side
+        { id: 'A1', empty: true, selected: false },
+        { id: 'B1', empty: false, selected: false },
+        { id: 'A2', empty: true, selected: false },
+        { id: 'B2', empty: false, selected: true },
+        { id: 'A3', empty: true, selected: false },
+        { id: 'B3', empty: false, selected: false },
+        { id: 'A2', empty: true, selected: false },
+        { id: 'B4', empty: true, selected: false },
+        { id: 'A5', empty: false, selected: true },
+        { id: 'B5', empty: true, selected: false },
+        { id: 'A6', empty: true, selected: false },
+        { id: 'B6', empty: false, selected: true },
+      ],
+      Row2: [ //left side
+        { id: 'C1', empty: false, selected: false },
+        { id: 'D1', empty: true, selected: false },
+        { id: 'E1', empty: false, selected: false },
+        { id: 'C2', empty: false, selected: true },
+        { id: 'D2', empty: true, selected: false },
+        { id: 'E2', empty: false, selected: false },
+        { id: 'C3', empty: true, selected: false },
+        { id: 'A2', empty: true, selected: false },
+        { id: 'E3', empty: true, selected: false },
+        { id: 'C4', empty: true, selected: false },
+        { id: 'D4', empty: false, selected: false },
+        { id: 'E4', empty: true, selected: false },
+        { id: 'A2', empty: true, selected: false },
+        { id: 'D5', empty: true, selected: false },
+        { id: 'E5', empty: true, selected: false },
+        { id: 'C6', empty: true, selected: false },
+        { id: 'D6', empty: false, selected: true },
+        { id: 'E6', empty: true, selected: false },
+      ]
+    },
+    // type: [{
+    //   seatCode: {
+    //     type: String,
+    //     validate: {
+    //       validator: function(v) {
+    //         const re = /^[A-E]{1}[1-6]{1}$/;
+    //         return (!v || !v.trim().length) || re.test(v)
+    //       },
+    //       message: 'Please Provide A correct notation for Seats'
+    //     },
+    //   },
+    //   empty: {
+    //     type: Boolean,
+    //     default: true,
+    //   },
+    //   selected: {
+    //     type: Boolean,
+    //     default: true,
+    //   },
+    //   user: {
+    //     type: mongoose.Schema.ObjectId,
+    //     ref: 'User',
+    //   }
+    // }],
   },
   classes: {
     type: String,
