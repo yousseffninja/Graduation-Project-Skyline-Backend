@@ -22,7 +22,10 @@ const flightsRouter = require('./routes/FlightRoutes');
 const app = express();
 
 app.enable('trust proxy');
-app.use(cors());
+app.use(cors({
+  // origin:'http://localhost:3000',
+  credentials:true,
+}));
 app.use(helmet({
         crossOriginEmbedderPolicy: false,
         crossOriginResourcePolicy: {
