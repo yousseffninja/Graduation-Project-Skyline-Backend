@@ -23,7 +23,7 @@ const app = express();
 
 app.enable('trust proxy');
 app.use(cors({
-  origin:['8','localhost:3000','localhost:5000','localhost:8000'],
+  origin:['*','localhost:3000','localhost:5000','localhost:8000'],
   credentials:true,
   optionSuccessStatus:200
 }));
