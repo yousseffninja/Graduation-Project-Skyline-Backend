@@ -50,63 +50,54 @@ const flightSchema = new mongoose.Schema({
         { id: 'E6', empty: true, selected: false },
       ]
     },
-    // type: [{
-    //   seatCode: {
-    //     type: String,
-    //     validate: {
-    //       validator: function(v) {
-    //         const re = /^[A-E]{1}[1-6]{1}$/;
-    //         return (!v || !v.trim().length) || re.test(v)
-    //       },
-    //       message: 'Please Provide A correct notation for Seats'
-    //     },
-    //   },
-    //   empty: {
-    //     type: Boolean,
-    //     default: true,
-    //   },
-    //   selected: {
-    //     type: Boolean,
-    //     default: true,
-    //   },
-    //   user: {
-    //     type: mongoose.Schema.ObjectId,
-    //     ref: 'User',
-    //   }
-    // }],
   },
   classes: {
     type: String,
     required: [true, 'Please provide flight class!'],
     enum: {
-      values: ['Class A', 'Class B', 'Class C', 'Business', 'Economy'],
-      message: 'Type must be Class A, Class B, Class C, Economy, or Business',
+      values: ['First A', 'Business', 'Economy'],
+      message: ' Economy, or Business',
     },
   },
   from: {
-    type: {
-      location: {
-        type: String,
-        required: [true, 'Please Provide Location'],
-      },
-      time: {
-        type: Date,
-        required: [true, 'Please Provide Time to Launch']
-      },
-    }
+    type: String,
   },
   to: {
-    type: {
-      location: {
-        type: String,
-        required: [true, 'Please Provide Location'],
-      },
-      time: {
-        type: Date,
-        required: [true, 'Please Provide Time to Land']
-      },
-    }
+    type: String,
   },
+  fromDate: {
+    type: String,
+  },
+  toDate: {
+    type: String,
+  },
+  date: {
+    type: Date,
+  },
+  // from: {
+  //   type: {
+  //     location: {
+  //       type: String,
+  //       required: [true, 'Please Provide Location'],
+  //     },
+  //     time: {
+  //       type: Date,
+  //       required: [true, 'Please Provide Time to Launch']
+  //     },
+  //   }
+  // },
+  // to: {
+  //   type: {
+  //     location: {
+  //       type: String,
+  //       required: [true, 'Please Provide Location'],
+  //     },
+  //     time: {
+  //       type: Date,
+  //       required: [true, 'Please Provide Time to Land']
+  //     },
+  //   }
+  // },
   gate: {
     type: String,
     required: [true, 'Please Provide The gate Code!'],
