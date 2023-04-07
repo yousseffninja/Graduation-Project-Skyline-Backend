@@ -50,6 +50,7 @@ exports.signup = catchAsync(async (req, res, next) => {
   )}/api/v1/users/verify/${verificationToken}`;
   const message = `You can verify your email by this link: ${verificationURL}.\nWish all best with our website :)`;
 
+
   try {
     await sendEmail({
       email: newUser.email,
@@ -180,13 +181,13 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
   if (!user) {
     return next(new AppError('There is no user with email address.', 404));
   }
-  const resetToken = user.createPasswordResetToken();
+  const resetToken = user.createPasswordResetTokenOTP();
   await user.save({ validateBeforeSave: false });
-  const resetURL = `${req.protocol}://${req.get(
-    'host'
-  )}/api/v1/users/resetPassword/${resetToken}`;
-  const message = `Forgot your password ? \n Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
-
+  // const resetURL = `${req.protocol}://${req.get(
+  //   'host'
+  // )}/api/v1/users/resetPassword/${resetToken}`;
+  // const message = `Forgot your password ? \n Submit a PATCH request with your new password and passwordConfirm to: ${resetURL}.\nIf you didn't forget your password, please ignore this email!`;
+  const message = `Forgot your password ? \n Your OTP Code is ${resetToken}.\nIf you didn't forget your password, please ignore this email!`;
   try {
     await sendEmail({
       email: user.email,
@@ -218,7 +219,7 @@ exports.resetPassword = catchAsync(async (req, res, next) => {
     .digest('hex');
 
   const user = await User.findOne({
-    passwordResetToken: hashedToken,
+    passwordResetTokenOTP: hashedToken,
     passwordResetExpires: { $gt: Date.now() }
   });
 

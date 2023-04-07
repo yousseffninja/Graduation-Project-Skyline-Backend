@@ -87,6 +87,7 @@ const userSchema = new mongoose.Schema({
   },
   passwordChangedAt: Date,
   passwordResetToken: String,
+  passwordResetTokenOTP: String,
   passwordResetExpires: Date,
   emailVerificationToken: String,
   emailVerificationTokenExpired: Date,
@@ -138,6 +139,21 @@ userSchema.methods.createPasswordResetToken = function() {
   const resetToken = crypto.randomBytes(32).toString('hex');
 
   this.passwordResetToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  console.log({ resetToken }, this.passwordResetToken);
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return resetToken;
+};
+
+userSchema.methods.createPasswordResetTokenOTP = function() {
+  const resetToken = Math.floor(100000 + Math.random() * 900000).toString()
+
+  this.passwordResetTokenOTP = crypto
     .createHash('sha256')
     .update(resetToken)
     .digest('hex');
