@@ -1,7 +1,7 @@
 const express = require('express');
 const airplaneCompanyController = require('./../controllers/airplaneCompanyController');
 const authController = require('./../controllers/authController');
-
+const upload = require('../utils/multer');
 const router = express.Router();
 
 router
@@ -25,6 +25,14 @@ router
     authController.protect,
     authController.restrictTo('admin'),
     airplaneCompanyController.deleteAirplaneCompany
-  )
+  );
+
+router.patch(
+  '/uploadPhoto/:id',
+  upload.single('image'),
+  authController.protect,
+  authController.restrictTo('admin'),
+  airplaneCompanyController.uploadPhoto
+);
 
 module.exports = router;

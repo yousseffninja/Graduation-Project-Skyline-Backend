@@ -5,6 +5,12 @@ const AirplaneCompanySchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide airplane company name!']
   },
+  cloudinaryIdAirplane: {
+    type: String,
+  },
+  airplaneCompanyPhoto: {
+    type: String,
+  },
   description: {
     type: String,
     required: [true, 'Please provide airplane description'],
