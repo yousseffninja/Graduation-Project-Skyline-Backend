@@ -46,6 +46,18 @@ const userSchema = new mongoose.Schema({
   cloudinaryId: {
     type: String,
   },
+  frontIDPhoto: {
+    type: String,
+  },
+  cloudinaryIdIDFront: {
+    type: String,
+  },
+  frontBackPhoto: {
+    type: String,
+  },
+  cloudinaryIdIDBack: {
+    type: String,
+  },
   role: {
     type: String,
     enum: ['user', 'admin'],
@@ -72,6 +84,10 @@ const userSchema = new mongoose.Schema({
     type: String,
   },
   emailActive: {
+    type: Boolean,
+    default: false,
+  },
+  IDActive: {
     type: Boolean,
     default: false,
   },

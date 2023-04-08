@@ -24,7 +24,9 @@ router.patch('/verify/:token', authController.verifyEmail)
 
 router.use(authController.protect);
 
-router.patch('/uploadeMyPhoto', upload.single('image') , userController.uploadPersonalPhoto);
+router.patch('/uploadMyPhoto', upload.single('image') , userController.uploadPersonalPhoto);
+router.patch('/uploadIDFront', upload.single('image') , userController.uploadFrontID);
+router.patch('/uploadIDBack', upload.single('image') , userController.uploadBackID);
 
 router.post('/phone/send-otp', twilio.sendOTP);
 router.post('/phone/verify-otp', twilio.verifyOTP);

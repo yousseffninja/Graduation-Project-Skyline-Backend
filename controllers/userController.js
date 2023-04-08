@@ -68,6 +68,40 @@ exports.uploadPersonalPhoto = catchAsync(async (req, res, next) => {
   });
 });
 
+exports.uploadFrontID = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id)
+  const result = await cloudinary.uploader.upload(req.file.path, {
+    public_id: `/${user.username}/ID/${user.username}FrontID`,
+    folder: 'users',
+    resource_type: 'image',
+  });
+  const updatedUser =  await User.findByIdAndUpdate(req.user.id, {
+    frontIDPhoto: result.secure_url,
+    cloudinaryIdIDFront: result.public_id,
+  });
+  res.status(201).json({
+    status: 'success',
+    updatedUser
+  });
+});
+
+exports.uploadBackID = catchAsync(async (req, res, next) => {
+  const user = await User.findById(req.user.id)
+  const result = await cloudinary.uploader.upload(req.file.path, {
+    public_id: `/${user.username}/ID/${user.username}BackID`,
+    folder: 'users',
+    resource_type: 'image',
+  });
+  const updatedUser =  await User.findByIdAndUpdate(req.user.id, {
+    frontBackPhoto: result.secure_url,
+    cloudinaryIdIDBack: result.public_id,
+  });
+  res.status(201).json({
+    status: 'success',
+    updatedUser
+  });
+});
+
 exports.getUser = factory.getOne(User);
 exports.getAllUsers = factory.getAll(User);
 exports.updateUser = factory.updateOne(User);
