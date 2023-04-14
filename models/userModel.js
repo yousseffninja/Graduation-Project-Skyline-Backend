@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     validate: {
       validator: function(v) {
-        const re = /^\d{10}$/;
+        const re = /^01[0125][0-9]{8}$/gm;
         return (!v || !v.trim().length) || re.test(v)
       },
       message: 'Provided phone number is invalid.'
@@ -105,8 +105,12 @@ const userSchema = new mongoose.Schema({
   passwordResetToken: String,
   passwordResetTokenOTP: String,
   passwordResetExpires: Date,
+  passwordResetTokenOTPSMS: String,
+  passwordResetExpiresSMS: Date,
   emailVerificationToken: String,
   emailVerificationTokenExpired: Date,
+  PaymentSessionToken: String,
+  PaymentSessionTokenExpires: Date,
   active: {
     type: Boolean,
     default: true,
@@ -129,7 +133,8 @@ userSchema.pre('save', function(next) {
 
 userSchema.pre(/^find/, function(next) {
   this.find({ active: { $ne: false } });
-
+  this.find({ emailActive: { $ne: false } });
+  this.find({ phoneActive: { $ne: false } });
   next();
 });
 
@@ -181,7 +186,36 @@ userSchema.methods.createPasswordResetTokenOTP = function() {
   return resetToken;
 };
 
+userSchema.methods.createPasswordResetTokenOTPSMS = function(SMS) {
+
+  this.passwordResetTokenOTP = crypto
+    .createHash('sha256')
+    .update(SMS.toString())
+    .digest('hex');
+
+  console.log({ SMS }, this.passwordResetToken);
+
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
+
+  return SMS;
+};
+
 userSchema.methods.createEmailVerificationToken = function() {
+  const verificationToken = crypto.randomBytes(32).toString('hex');
+
+  this.emailVerificationToken = crypto
+    .createHash('sha256')
+    .update(verificationToken)
+    .digest('hex');
+
+  console.log({ verificationToken }, this.emailVerificationToken);
+
+  this.emailVerificationTokenExpired = Date.now() + 10 * 60 * 1000;
+
+  return verificationToken;
+};
+
+userSchema.methods.createPaymentoken = function(TimeExpire) {
   const verificationToken = crypto.randomBytes(32).toString('hex');
 
   this.emailVerificationToken = crypto

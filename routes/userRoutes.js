@@ -19,7 +19,9 @@ router.get('/auth/facebook', passport.authenticate('facebook', { scope: 'email' 
 router.get('/auth/facebook/callback', passport.authenticate('facebook', { failureRedirect: '/login' }), authController.googleOrGoogleAuth)
 
 router.post('/forgotPassword', authController.forgotPassword);
+router.post('/forgotPasswordSMS', twilio.sendOTPForget);
 router.patch('/resetPassword/:token', authController.resetPassword);
+router.patch('/resetPasswordSMS/', twilio.verifyOTPReset);
 router.patch('/verify/:token', authController.verifyEmail)
 
 router.use(authController.protect);
