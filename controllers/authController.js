@@ -272,6 +272,10 @@ exports.sendEmailVerification = catchAsync(async (req, res, next) => {
       subject: 'Your verification email token (valid for 10 min)',
       message
     });
+    res.status(201).json({
+      status: 'success',
+      message: 'Email Verification is sent!'
+    })
   } catch (err) {
     console.log(err)
     user.emailVerificationToken = undefined;
