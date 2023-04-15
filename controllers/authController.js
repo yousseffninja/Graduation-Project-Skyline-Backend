@@ -250,7 +250,7 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
 });
 
 exports.sendEmailVerification = catchAsync(async (req, res, next) => {
-  const user = await User.findOne(req.body.email);
+  const user = await User.findOne({ email: req.body.email });
 
   if(!user) {
     next(
