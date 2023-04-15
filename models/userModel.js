@@ -133,8 +133,6 @@ userSchema.pre('save', function(next) {
 
 userSchema.pre(/^find/, function(next) {
   this.find({ active: { $ne: false } });
-  this.find({ emailActive: { $ne: false } });
-  this.find({ phoneActive: { $ne: false } });
   next();
 });
 
@@ -201,18 +199,18 @@ userSchema.methods.createPasswordResetTokenOTPSMS = function(SMS) {
 };
 
 userSchema.methods.createEmailVerificationToken = function() {
-  const verificationToken = crypto.randomBytes(32).toString('hex');
+  const emailVerificationToken = Math.floor((Math.random()*1000000)+1);
 
   this.emailVerificationToken = crypto
     .createHash('sha256')
-    .update(verificationToken)
+    .update(emailVerificationToken.toString())
     .digest('hex');
 
-  console.log({ verificationToken }, this.emailVerificationToken);
+  console.log({ emailVerificationToken }, this.emailVerificationToken);
 
   this.emailVerificationTokenExpired = Date.now() + 10 * 60 * 1000;
 
-  return verificationToken;
+  return emailVerificationToken;
 };
 
 userSchema.methods.createPaymentoken = function(TimeExpire) {

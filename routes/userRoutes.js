@@ -22,32 +22,76 @@ router.post('/forgotPassword', authController.forgotPassword);
 router.post('/forgotPasswordSMS', twilio.sendOTPForget);
 router.patch('/resetPassword/:token', authController.resetPassword);
 router.patch('/resetPasswordSMS/', twilio.verifyOTPReset);
+router.patch('/sendEmailVerification', authController.sendEmailVerification)
 router.patch('/verify/:token', authController.verifyEmail)
 
-router.use(authController.protect);
+router.patch(
+  '/uploadMyPhoto',
+  upload.single('image'),
+  authController.protect,
+  userController.uploadPersonalPhoto
+);
 
-router.patch('/uploadMyPhoto', upload.single('image') , userController.uploadPersonalPhoto);
-router.patch('/uploadIDFront', upload.single('image') , userController.uploadFrontID);
-router.patch('/uploadIDBack', upload.single('image') , userController.uploadBackID);
+router.patch(
+  '/uploadIDFront',
+  upload.single('image'),
+  authController.protect,
+  userController.uploadFrontID
+);
 
-router.post('/phone/send-otp', twilio.sendOTP);
-router.post('/phone/verify-otp', twilio.verifyOTP);
+router.patch(
+  '/uploadIDBack',
+  upload.single('image'),
+  authController.protect,
+  userController.uploadBackID
+);
 
-router.patch('/updateMyPassword', authController.updatePassword);
-router.get('/me', userController.getMe, userController.getUser);
-router.patch('/updateMe', userController.updateMe);
-router.delete('/deleteMe', userController.deleteMe);
+router.post(
+  '/phone/send-otp',
+  authController.protect,
+  twilio.sendOTP
+);
 
-router.use(authController.restrictTo('admin'));
+router.post(
+  '/phone/verify-otp',
+  authController.protect,
+  twilio.verifyOTP
+);
+
+router.patch(
+  '/updateMyPassword',
+  authController.protect,
+  authController.updatePassword
+);
+
+router.get(
+  '/me',
+  userController.getMe,
+  authController.protect,
+  userController.getUser
+);
+
+router.patch(
+  '/updateMe',
+  authController.protect,
+  userController.updateMe
+);
+router.delete(
+  '/deleteMe',
+  authController.protect,
+  userController.deleteMe
+);
+
+
 
 router
   .route('/')
-  .get(userController.getAllUsers)
+  .get(authController.restrictTo('admin'), userController.getAllUsers)
 
 router
   .route('/:id')
-  .get(userController.getUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
+  .get(authController.restrictTo('admin'), userController.getUser)
+  .patch(authController.restrictTo('admin'), userController.updateUser)
+  .delete(authController.restrictTo('admin'), userController.deleteUser);
 
 module.exports = router;

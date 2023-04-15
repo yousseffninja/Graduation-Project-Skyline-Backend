@@ -249,6 +249,42 @@ exports.updatePassword = catchAsync(async (req, res, next) => {
   createSendToken(user, 200, res);
 });
 
+exports.sendEmailVerification = catchAsync(async (req, res, next) => {
+  const user = await User.findOne(req.body.email);
+
+  if(!user) {
+    next(
+      new AppError('This email does not exist', 401)
+    );
+  }
+
+  const verificationToken = user.createEmailVerificationToken();
+  await user.save({ validateBeforeSave: false });
+  const verificationURL = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/users/verify/${verificationToken}`;
+  const message = `You can verify your email by this link: ${verificationURL}.\nWish all best with our website :)`;
+
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Your verification email token (valid for 10 min)',
+      message
+    });
+  } catch (err) {
+    console.log(err)
+    user.emailVerificationToken = undefined;
+    user.emailVerificationTokenExpired = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(
+      new AppError('There was an error sending the email. Try again later!'),
+      500
+    );
+  }
+});
+
 exports.verifyEmail = catchAsync(async (req, res, next) => {
   const hashedToken = crypto
     .createHash('sha256')
@@ -263,6 +299,7 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
     emailVerificationToken: undefined,
     emailVerificationTokenExpired: undefined,
   });
+  console.log(user);
   if (!user) {
     return next(new AppError('Token is invalid or has expired', 400));
   }
