@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-const airplaneCompanyModel = require('./airplaneCompanyModel');
 
 const flightSchema = new mongoose.Schema({
   flightNo: {
@@ -82,30 +81,6 @@ const flightSchema = new mongoose.Schema({
   sala: {
     type: Number,
   },
-  // from: {
-  //   type: {
-  //     location: {
-  //       type: String,
-  //       required: [true, 'Please Provide Location'],
-  //     },
-  //     time: {
-  //       type: Date,
-  //       required: [true, 'Please Provide Time to Launch']
-  //     },
-  //   }
-  // },
-  // to: {
-  //   type: {
-  //     location: {
-  //       type: String,
-  //       required: [true, 'Please Provide Location'],
-  //     },
-  //     time: {
-  //       type: Date,
-  //       required: [true, 'Please Provide Time to Land']
-  //     },
-  //   }
-  // },
   gate: {
     type: String,
     required: [true, 'Please Provide The gate Code!'],
@@ -151,11 +126,7 @@ const flightSchema = new mongoose.Schema({
       ref: 'airplane_company',
       required: [true, 'Please provide ID of airplane company']
     }
-},
-  {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
-  });
+});
 
 const Flight = mongoose.model('flights', flightSchema);
 

@@ -11,9 +11,15 @@ router.get(
 );
 
 router.get(
-  '/checkout-session/flights/:flightId',
+  '/checkout-session/flights/:flightId/:seatID',
   authController.protect,
   bookingController.getCheckoutSessionFlight
 );
+
+router.get(
+  '/success/:flightId/:seatID',
+  authController.protect,
+  bookingController.flightBookingSuccess
+)
 
 module.exports = router;
