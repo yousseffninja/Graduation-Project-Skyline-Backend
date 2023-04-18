@@ -122,7 +122,7 @@ exports.flightBookingSuccess = catchAsync(async (req, res, next) => {
 
 exports.redirectToMobile = catchAsync(async (req, res, next) => {
   // res.redirect(`exp://192.168.1.4:19000/--/Home?flightId=${req.params.flightId}&seatID=${req.params.seatID}`)
-  res.status(200).type("html").send("<h1>Email Confirmed - You can now log in <a href='exp://192.168.1.4:19000/--/Home?flightId=${req.params.flightId}&seatID=${req.params.seatID}'>Click</a><h1>");
+  res.status(200).type("html").send("<h1>Email Confirmed - You can now log in<h1><br><br><br> <a href='exp://192.168.1.4:19000/--/Home?flightId=${req.params.flightId}&seatID=${req.params.seatID}'>Click</a>");
 })
 
 
