@@ -41,7 +41,7 @@ exports.getCheckoutSessionFlight = catchAsync(async (req, res, next) => {
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
-    success_url: `exp://192.168.1.4:19000/--/Home?flightId=${req.params.flightId}&seatID=${req.params.seatID}`,
+    success_url: `${req.protocol}://${req.get('host')}/redirect/${req.params.flightId}/${req.params.seatID}`,
     cancel_url: `${req.protocol}://${req.get('host')}/flight`,
     customer_email: req.user.email,
     client_reference_id: req.params.flightId,
@@ -119,4 +119,8 @@ exports.flightBookingSuccess = catchAsync(async (req, res, next) => {
     message: 'booking successful !'
   })
 });
+
+exports.redirectToMobile = catchAsync(async (req, res, next) => {
+  res.redirect(`exp://192.168.1.4:19000/--/Home?flightId=${req.params.flightId}&seatID=${req.params.seatID}`)
+})
 
