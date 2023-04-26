@@ -83,6 +83,10 @@ const userSchema = new mongoose.Schema({
   address: {
     type: String,
   },
+  orders: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'order_history',
+  }],
   emailActive: {
     type: Boolean,
     default: false,

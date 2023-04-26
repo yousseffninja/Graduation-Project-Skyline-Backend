@@ -1,8 +1,38 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const Tour = require('./../models/tourModel');
 const Flight = require('./../models/flghtModel');
+const Orders = require('./../models/orderHistory');
+const Users = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+
+const htmlSuccess = "<!DOCTYPE html>\n" +
+  "<html>\n" +
+  "<head>\n" +
+  "\t<title>Payment Success</title>\n" +
+  "\t<style>\n" +
+  "\t\tbody {\n" +
+  "\t\t\tfont-family: Arial, sans-serif;\n" +
+  "\t\t\tbackground-color: #f2f2f2;\n" +
+  "\t\t}\n" +
+  "\t\th1 {\n" +
+  "\t\t\tcolor: #008000;\n" +
+  "\t\t\tfont-size: 36px;\n" +
+  "\t\t\ttext-align: center;\n" +
+  "\t\t\tmargin-top: 50px;\n" +
+  "\t\t}\n" +
+  "\t\tp {\n" +
+  "\t\t\tfont-size: 24px;\n" +
+  "\t\t\ttext-align: center;\n" +
+  "\t\t\tmargin-top: 20px;\n" +
+  "\t\t}\n" +
+  "\t</style>\n" +
+  "</head>\n" +
+  "<body>\n" +
+  "\t<h1>Payment Successful!</h1>\n" +
+  "\t<p>Thank you for your payment.</p>\n" +
+  "</body>\n" +
+  "</html>\n";
 
 exports.getCheckoutSessionTour = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.tourId);
@@ -114,6 +144,17 @@ exports.flightBookingSuccess = catchAsync(async (req, res, next) => {
     }
   }
   await flight.save({ validateBeforeSave: false });
+
+  const order = await Orders.create({
+    flight: req.params.flightId,
+    seat: req.params.seatID,
+    price: flight.price,
+    userId: req.user.id,
+  });
+
+  await Users.findByIdAndUpdate(req.user.id, {
+    $push: { "orders": order.id }
+  })
   res.status(201).json({
     status: 'Success',
     message: 'booking successful !'
@@ -122,7 +163,7 @@ exports.flightBookingSuccess = catchAsync(async (req, res, next) => {
 
 exports.redirectToMobile = catchAsync(async (req, res, next) => {
   // res.redirect(`exp://192.168.1.4:19000/--/Home?flightId=${req.params.flightId}&seatID=${req.params.seatID}`)
-  res.status(200).type("html").send("<h1>Email Confirmed - You can now log in<h1><br><br><br> <a href='exp://192.168.1.4:19000/--/Home?flightId=${req.params.flightId}&seatID=${req.params.seatID}'>Click</a>");
+  res.status(200).type("html").send(htmlSuccess);
 })
 
 
