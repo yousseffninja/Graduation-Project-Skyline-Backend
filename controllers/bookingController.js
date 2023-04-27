@@ -71,7 +71,7 @@ exports.getCheckoutSessionFlight = catchAsync(async (req, res, next) => {
 
   const session = await stripe.checkout.sessions.create({
     payment_method_types: ['card'],
-    success_url: `${req.protocol}://${req.get('host')}/api/v1/bookings/redirect/${req.params.flightId}/${req.params.seatID}`,
+    success_url: `${req.protocol}://${req.get('host')}/api/v1/bookings/redirect/${req.params.flightId}/${req.params.seatID}/${req.params.userID}`,
     cancel_url: `${req.protocol}://${req.get('host')}/flight`,
     customer_email: req.user.email,
     client_reference_id: req.params.flightId,
@@ -101,13 +101,13 @@ exports.flightBookingSuccess = catchAsync(async (req, res, next) => {
   const flight = await Flight.findById(req.params.flightId)
   const seatID = req.params.seatID
   if (seatID.charAt(0) === "A" || seatID.charAt(0) === "B"){
-    const index = (seatID.charCodeAt(0) - 65) * parseInt(seatID.charAt(1));
+    const index = (seatID.charCodeAt(0) - 65) * parseInt(seatID.charAt(1))
     if (flight.Seats.Row1[index].empty){
       flight.Seats.Row1[index] = {
         id: seatID,
         empty: false,
         selected: true,
-        userId: req.user.id,
+        userId: req.params.userID,
       }
 
       const obj = flight.Seats
@@ -123,13 +123,12 @@ exports.flightBookingSuccess = catchAsync(async (req, res, next) => {
     }
   } else {
     const index = (seatID.charCodeAt(0) - 67) * parseInt(seatID.charAt(1));
-    console.log("kj",index)
     if (flight.Seats.Row2[index].empty){
       flight.Seats.Row2[index] = {
         id: seatID,
         empty: false,
         selected: true,
-        userId: req.user.id,
+        userId: req.params.userID,
       }
       const obj = flight.Seats
       flight.Seats = obj;
@@ -149,10 +148,10 @@ exports.flightBookingSuccess = catchAsync(async (req, res, next) => {
     flight: req.params.flightId,
     seat: req.params.seatID,
     price: flight.price,
-    userId: req.user.id,
+    userId: req.params.userID,
   });
 
-  await Users.findByIdAndUpdate(req.user.id, {
+  await Users.findByIdAndUpdate(req.params.userID, {
     $push: { "orders": order.id }
   })
   // res.status(201).json({

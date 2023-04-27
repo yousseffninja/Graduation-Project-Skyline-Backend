@@ -11,19 +11,19 @@ router.get(
 );
 
 router.get(
-  '/checkout-session/flights/:flightId/:seatID',
+  '/checkout-session/flights/:flightId/:seatID/:userID',
   authController.protect,
   bookingController.getCheckoutSessionFlight
 );
 
 router.get(
-  '/success/:flightId/:seatID',
+  '/success/:flightId/:seatID/:userID',
   authController.protect,
   bookingController.flightBookingSuccess
 )
 
 router.get(
-  '/redirect/:flightId/:seatID',
+  '/redirect/:flightId/:seatID/:userID',
   bookingController.flightBookingSuccess
 )
 
