@@ -123,7 +123,7 @@ exports.flightBookingSuccess = catchAsync(async (req, res, next) => {
     }
   } else {
     const index = (seatID.charCodeAt(0) - 67) * parseInt(seatID.charAt(1));
-
+    console.log("kj",index)
     if (flight.Seats.Row2[index].empty){
       flight.Seats.Row2[index] = {
         id: seatID,
