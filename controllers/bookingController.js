@@ -155,10 +155,11 @@ exports.flightBookingSuccess = catchAsync(async (req, res, next) => {
   await Users.findByIdAndUpdate(req.user.id, {
     $push: { "orders": order.id }
   })
-  res.status(201).json({
-    status: 'Success',
-    message: 'booking successful !'
-  })
+  // res.status(201).json({
+  //   status: 'Success',
+  //   message: 'booking successful !'
+  // })
+  res.status(201).type("html").send(htmlSuccess);
 });
 
 exports.redirectToMobile = catchAsync(async (req, res, next) => {

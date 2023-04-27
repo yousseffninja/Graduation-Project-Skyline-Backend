@@ -24,7 +24,7 @@ router.get(
 
 router.get(
   '/redirect/:flightId/:seatID',
-  bookingController.redirectToMobile
+  bookingController.flightBookingSuccess
 )
 
 module.exports = router;

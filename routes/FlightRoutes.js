@@ -1,6 +1,7 @@
 const express = require('express');
 const flightController = require('./../controllers/FlightController');
 const authController = require('./../controllers/authController');
+const flightOrderController = require('./../controllers/flightOrderController');
 
 const router = express.Router();
 
@@ -28,11 +29,11 @@ router
   );
 
 router
-  .route('/orders')
+  .route('/orders/history')
   .get(
     authController.protect,
     authController.restrictTo('admin'),
-
+    flightOrderController.getOrders
   )
 
 module.exports = router;
