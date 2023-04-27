@@ -27,4 +27,12 @@ router
     flightController.deleteFlight
   );
 
+router
+  .route('/orders')
+  .get(
+    authController.protect,
+    authController.restrictTo('admin'),
+
+  )
+
 module.exports = router;

@@ -67,7 +67,6 @@ router.patch(
 router.get(
   '/me',
   userController.getMe,
-  authController.protect,
   userController.getUser
 );
 
