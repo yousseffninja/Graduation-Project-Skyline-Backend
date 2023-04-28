@@ -32,7 +32,6 @@ router
   .route('/orders/history')
   .get(
     authController.protect,
-    authController.restrictTo('admin'),
     flightOrderController.getOrders
   )
 
