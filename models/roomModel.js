@@ -29,6 +29,12 @@ const RoomSchema = new mongoose.Schema({
     type: Number,
     required: [true, 'Please provide room Price per day']
   },
+  hotelId: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'hotel'
+  },
+  roomPhoto: String,
+  cloudinaryId: String,
 });
 
 const Room = mongoose.model('room', RoomSchema);
