@@ -12,10 +12,8 @@ exports.uploadHotelCover = catchAsync(async (req, res, next) => {
     resource_type: 'image',
   });
   await Hotel.findByIdAndUpdate(req.params.id, {
-    imageCover: {
-      hotelPhoto: result.secure_url,
-      cloudinaryId: result.public_id,
-    },
+    hotelPhoto: result.secure_url,
+    cloudinaryId: result.public_id,
   });
   res.status(201).json({
     status: 'success',
