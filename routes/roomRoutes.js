@@ -31,7 +31,7 @@ router
 
 router
   .post(
-    '/uploadHotelImage/:id/:hotelId',
+    '/uploadRoomImage/:id/:hotelId',
     upload.single('image'),
     authController.protect,
     authController.restrictTo('admin'),
