@@ -9,6 +9,22 @@ const RoomSchema = new mongoose.Schema({
       message: 'Type must be Single, Double or Triple',
     },
   },
+  space: {
+    type: Number,
+    required: [true, 'Please Provide Room space']
+  },
+  Beds: {
+    bed: Number,
+    bigBed: Number
+  },
+  facilities: [{
+    type: String,
+    enum: ['free wifi', 'Break fast', 'garden view', 'kitchen',  'sea view'],
+  }],
+  notfacilities: [{
+    type: String,
+    enum: ['partially refundable'],
+  }],
   price: {
     type: Number,
     required: [true, 'Please provide room Price per day']

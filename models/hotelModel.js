@@ -5,21 +5,21 @@ const HotelSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide hotel name !']
   },
-  type: {
+  price: {
+    type: Number,
+    required: [true, 'Please provide hotel price !']
+  },
+  country: {
     type: String,
-    required: [true, 'Please provide hotel name !'],
-    enum: {
-      values: ['Class A', 'Class B', 'Class C'],
-      message: 'Type must be Class A, Class B, Class C',
-    },
+    required: [true, 'Please provide hotel country location !'],
   },
   city: {
     type: String,
     required: [true, 'Please provide hotel city location !'],
   },
-  addresses: {
-    type: Array,
-    required: [true, 'Please Provide the room details'],
+  address: {
+    type: String,
+    required: [true, 'Please Provide the room address'],
   },
   rooms: {
     type: [
@@ -28,12 +28,29 @@ const HotelSchema = new mongoose.Schema({
         ref: 'room'
       }
     ],
-    required: [true, 'Please Provide the room details'],
+  },
+  ratingsAverage: {
+    type: Number,
+    default: 1,
+    min: [1, 'Rating must be above 1.0'],
+    max: [5, 'Rating must be below 5.0'],
+    set: val => Math.round(val * 10) / 10
+  },
+  ratingsQuantity: {
+    type: Number,
+    default: 0
   },
   description: {
     type: String,
     required: [true, 'Please Provide the hotel description'],
-  }
+  },
+  location: {
+    latitude: Number,
+    longitude: Number
+  },
+  hotelPhoto: String,
+  cloudinaryId: String
+
 },{
   toJSON: { virtuals: true },
   toObject: { virtuals: true }

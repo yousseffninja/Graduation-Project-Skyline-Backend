@@ -1,12 +1,7 @@
-// const sharp = require('sharp');
-const path = require('path');
 const cloudinary = require('../utils/cloudinary');
 const Tour = require('./../models/tourModel');
 const catchAsync = require('./../utils/catchAsync');
 const factory = require('./handlerFactory');
-const User = require('../models/userModel');
-const sharp = require('sharp');
-// const AppError = require('./../utils/appError');
 
 exports.aliasTopTours = (req, res, next) => {
   req.query.limit = '5';
