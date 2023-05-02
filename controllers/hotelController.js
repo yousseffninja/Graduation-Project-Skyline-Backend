@@ -7,7 +7,7 @@ exports.uploadHotelCover = catchAsync(async (req, res, next) => {
   const hotel = await Hotel.findById(req.params.id)
 
   const result = await cloudinary.uploader.upload(req.file.path, {
-    public_id: `/${hotel.name}/${hotel.name}-cover`,
+    public_id: `/${hotel.hotelName}/${hotel.hotelName}-cover`,
     folder: 'hotels',
     resource_type: 'image',
   });
