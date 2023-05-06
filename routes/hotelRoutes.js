@@ -15,6 +15,10 @@ router
   );
 
 router
+  .route('/rooms/:id')
+  .get(hotelController.getRoomsOfHotels);
+
+router
   .route('/:id')
   .get(hotelController.getHotel)
   .patch(

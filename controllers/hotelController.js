@@ -1,5 +1,6 @@
 const cloudinary = require('../utils/cloudinary');
 const Hotel = require('./../models/hotelModel');
+const Room = require('./../models/roomModel');
 const catchAsync = require('./../utils/catchAsync');
 const factory = require('./handlerFactory');
 
@@ -20,6 +21,19 @@ exports.uploadHotelCover = catchAsync(async (req, res, next) => {
   });
 })
 
+exports.getRoomsOfHotels = catchAsync(async (req, res, next) => {
+  const hotel = await Hotel.findById(req.params.id);
+  const roomsIds = hotel.rooms;
+  const Rooms = await Room.find({
+    _id: {
+      $in: roomsIds
+    }
+  });
+  res.status(201).json({
+    status: 'success',
+    Rooms
+  })
+})
 
 exports.getAllHotels = factory.getAll(Hotel);
 exports.getHotel = factory.getOne(Hotel);

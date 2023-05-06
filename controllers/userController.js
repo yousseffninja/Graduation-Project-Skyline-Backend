@@ -1,4 +1,6 @@
 const User = require('./../models/userModel');
+const Orders = require('./../models/orderHistory');
+const Flight = require('./../models/flghtModel')
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
 const factory = require('./handlerFactory');
@@ -41,6 +43,28 @@ exports.updateMe = catchAsync(async (req, res, next) => {
     }
   });
 });
+
+exports.getHistoryOrder = catchAsync(async (req, res, next) => {
+  const userId = req.user.id;
+  const user = await User.findById(userId);
+  const ordersIds = user.orders;
+  const orders = await Orders.find({
+    _id: {
+      $in: ordersIds
+    }
+  })
+  const flightIds = orders.map(e => e.flight)
+  const flights = await Flight.find({
+    _id: {
+      $in: flightIds
+    }
+  })
+  res.status(201).json({
+    status: 'success',
+    orders,
+    flights
+  })
+})
 
 exports.deleteMe = catchAsync(async (req, res, next) => {
   await User.findByIdAndUpdate(req.user.id, { active: false });

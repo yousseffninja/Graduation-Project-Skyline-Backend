@@ -25,6 +25,12 @@ router.patch('/resetPasswordSMS/', twilio.verifyOTPReset);
 router.patch('/sendEmailVerification', authController.sendEmailVerification)
 router.patch('/verify/:token', authController.verifyEmail)
 
+router.get(
+      '/orders',
+      authController.protect,
+      userController.getHistoryOrder
+  );
+
 router.patch(
   '/uploadMyPhoto',
   upload.single('image'),
