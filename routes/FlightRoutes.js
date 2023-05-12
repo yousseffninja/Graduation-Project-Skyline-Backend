@@ -14,6 +14,11 @@ router
     flightController.CreateFlight,
   );
 
+router.get(
+  '/multiDestinations',
+  flightController.getAllMultiLegFlight
+)
+
 router
   .route('/:id')
   .get(flightController.getFlight)
