@@ -17,6 +17,9 @@ const HotelSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide hotel city location !'],
   },
+  images: [
+    { type: String }
+  ],
   address: {
     type: String,
     required: [true, 'Please Provide the room address'],

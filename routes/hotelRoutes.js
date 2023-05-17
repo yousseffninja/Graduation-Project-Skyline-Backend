@@ -41,4 +41,13 @@ router
     hotelController.uploadHotelCover
   );
 
+router
+  .post(
+    '/uploadHotelPhotos/:id',
+    upload.single('image'),
+    authController.protect,
+    authController.restrictTo('admin'),
+    hotelController.uploadPhotosOfHotel
+  );
+
 module.exports = router;
