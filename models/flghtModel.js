@@ -121,11 +121,16 @@ const flightSchema = new mongoose.Schema({
     ref: 'airplane_company',
     required: [true, 'Please provide ID of airplane company']
   },
-    airplaneCompanyrecieve: {
-      type: mongoose.Schema.ObjectId,
-      ref: 'airplane_company',
-      required: [true, 'Please provide ID of airplane company']
-    }
+  airplaneCompanyrecieve: {
+    type: mongoose.Schema.ObjectId,
+    ref: 'airplane_company',
+    required: [true, 'Please provide ID of airplane company']
+  },
+  roundTrip: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Flight',
+    default: null
+  }
 });
 
 const Flight = mongoose.model('flights', flightSchema);

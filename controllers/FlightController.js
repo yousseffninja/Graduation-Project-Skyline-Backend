@@ -85,6 +85,78 @@ exports.getAllMultiLegFlight = catchAsync(async(req, res, next) => {
 
 });
 
+exports.generateRoundTripFlights = catchAsync(async (req, res, next) => {
+  const { from, to, flightNoSend, flightNoREceive, airplaneCompany, airplaneCompanyrecieve, price, maxBagPerPerson, gate } = req.body;
+
+  const outboundFlight = await Flight.create({
+    flightNo: flightNoSend,
+    from,
+    to,
+    type: 'Round Trip',
+    airplaneCompany: airplaneCompany,
+    airplaneCompanyrecieve: airplaneCompanyrecieve,
+    price: price,
+    maxBagPerPerson: maxBagPerPerson,
+    gate: gate,
+    classes: 'Economy',
+  });
+  const returnFlight = await Flight.create({
+    flightNo: flightNoREceive,
+    from: to,
+    to: from,
+    type: 'Round Trip',
+    airplaneCompany: airplaneCompanyrecieve,
+    airplaneCompanyrecieve: airplaneCompany,
+    price: price,
+    maxBagPerPerson: maxBagPerPerson,
+    gate: gate,
+    classes: 'Economy',
+  });
+
+  outboundFlight.roundTrip = returnFlight._id;
+  returnFlight.roundTrip = outboundFlight._id;
+  await outboundFlight.save();
+  await returnFlight.save();
+
+  res.status(201).json({
+    status: 'success',
+    data: {
+      outboundFlight,
+      returnFlight
+    }
+  });
+});
+
+exports.findRoundTripFlights = catchAsync(async (req, res, next) => {
+  const { from, to } = req.body;
+
+  const outboundFlights = await Flight.find({
+    from,
+    to,
+    type: 'Round Trip'
+  }).select('-Seats');
+
+  const roundTripFlights = [];
+  for (const outboundFlight of outboundFlights) {
+    const returnFlight = await Flight.findOne({
+      from: to,
+      to: from,
+      roundTrip: outboundFlight._id
+    }).select('-Seats');
+    if (returnFlight) {
+      roundTripFlights.push({
+        outboundFlight,
+        returnFlight
+      });
+    }
+  }
+
+  res.status(200).json({
+    status: 'success',
+    data: roundTripFlights
+  });
+});
+
 exports.getAllFlight = factory.getAll(Flight);
 exports.getFlight = factory.getOne(Flight);
 exports.updateFlight= factory.updateOne(Flight);

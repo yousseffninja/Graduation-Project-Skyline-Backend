@@ -14,6 +14,15 @@ router
     flightController.CreateFlight,
   );
 
+router
+  .route('/round-trip')
+  .post(
+    authController.protect,
+    authController.restrictTo("admin"),
+    flightController.generateRoundTripFlights
+  )
+  .get(flightController.findRoundTripFlights)
+
 router.get(
   '/multiDestinations',
   flightController.getAllMultiLegFlight
