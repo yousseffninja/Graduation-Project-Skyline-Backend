@@ -43,18 +43,13 @@ exports.signup = catchAsync(async (req, res, next) => {
     passwordConfirm: req.body.passwordConfirm
   })
 
-  const verificationToken = newUser.createEmailVerificationToken();
+  const resetToken = newUser.createPasswordResetTokenOTP();
   await newUser.save({ validateBeforeSave: false });
-  const verificationURL = `${req.protocol}://${req.get(
-    'host'
-  )}/api/v1/users/verify/${verificationToken}`;
-  const message = `You can verify your email by this link: ${verificationURL}.\nWish all best with our website :)`;
-
-
+  const message = `Forgot your password ? \n Your OTP Code is ${resetToken}.\nIf you didn't forget your password, please ignore this email!`;
   try {
     await sendEmail({
       email: newUser.email,
-      subject: 'Your verification email token (valid for 10 min)',
+      subject: 'Your password reset token (valid for 10 min)',
       message
     });
 
