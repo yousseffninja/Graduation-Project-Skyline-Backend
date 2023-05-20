@@ -154,10 +154,6 @@ exports.flightBookingSuccess = catchAsync(async (req, res, next) => {
   await Users.findByIdAndUpdate(req.params.userID, {
     $push: { "orders": order.id }
   })
-  // res.status(201).json({
-  //   status: 'Success',
-  //   message: 'booking successful !'
-  // })
   res.status(201).type("html").send(htmlSuccess);
 });
 

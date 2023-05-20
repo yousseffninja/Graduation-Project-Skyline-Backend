@@ -292,8 +292,8 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
     .digest('hex');
 
   const user = await User.findOneAndUpdate({
-    emailVerificationToken: hashedToken,
-    emailVerificationTokenExpired: { $gt: Date.now() }
+    passwordResetTokenOTP: hashedToken,
+    passwordResetExpires: { $gt: Date.now() }
   },{
     emailActive: true,
     emailVerificationToken: undefined,
@@ -304,4 +304,34 @@ exports.verifyEmail = catchAsync(async (req, res, next) => {
     return next(new AppError('Token is invalid or has expired', 400));
   }
   createSendToken(user, 200, res);
+});
+
+exports.resendVerifyOTPEmail = catchAsync(async (req, res, next) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+
+  const resetToken = user.createPasswordResetTokenOTP();
+  await user.save({ validateBeforeSave: false });
+  const message = `Forgot your password ? \n Your OTP Code is ${resetToken}.\nIf you didn't forget your password, please ignore this email!`;
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'user password reset token (valid for 10 min)',
+      message
+    });
+    res.status(201).json({
+      status: 'success',
+      message: "OTP Sent successful"
+    })
+  } catch (err) {
+    console.log(err)
+    user.emailVerificationToken = undefined;
+    user.emailVerificationTokenExpired = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(
+      new AppError('There was an error sending the email. Try again later!'),
+      500
+    );
+  }
 });

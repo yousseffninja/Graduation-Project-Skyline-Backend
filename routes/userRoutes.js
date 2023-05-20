@@ -24,6 +24,7 @@ router.patch('/resetPassword/:token', authController.resetPassword);
 router.patch('/resetPasswordSMS/', twilio.verifyOTPReset);
 router.patch('/sendEmailVerification', authController.sendEmailVerification)
 router.patch('/verify/:token', authController.verifyEmail)
+router.patch('/resendVerifyOTP', authController.resendVerifyOTPEmail);
 
 router.get(
       '/orders',
