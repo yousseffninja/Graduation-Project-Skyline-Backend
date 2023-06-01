@@ -42,21 +42,27 @@ const userSchema = new mongoose.Schema({
   },
   userPhoto: {
     type: String,
+    default: "",
   },
   cloudinaryId: {
     type: String,
+    default: "",
   },
   frontIDPhoto: {
     type: String,
+    default: "",
   },
   cloudinaryIdIDFront: {
     type: String,
+    default: "",
   },
   frontBackPhoto: {
     type: String,
+    default: "",
   },
   cloudinaryIdIDBack: {
     type: String,
+    default: "",
   },
   role: {
     type: String,
