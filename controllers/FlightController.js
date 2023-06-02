@@ -128,7 +128,9 @@ exports.generateRoundTripFlights = catchAsync(async (req, res, next) => {
 });
 
 exports.findRoundTripFlights = catchAsync(async (req, res, next) => {
-  const { from, to } = req.body;
+  const { from, to } = req.query;
+
+  console.log(from, to);
 
   const outboundFlights = await Flight.find({
     from,
