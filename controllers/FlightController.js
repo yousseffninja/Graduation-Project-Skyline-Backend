@@ -44,9 +44,17 @@ exports.CreateFlight = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllMultiLegFlight = catchAsync(async(req, res, next) => {
-  const { from, to } = req.query;
+  const { from, to, fromDate, toDate } = req.query;
 
-  const allFlights = await findConnectingFlights(from, to);
+  let allFlights = await findConnectingFlights(from || "", to || "");
+
+  if (fromDate && toDate){
+    allFlights = allFlights.filter(flightGroup => {
+      return flightGroup.some(flight => {
+        return flight.fromDate >= fromDate && flight.toDate <= toDate;
+      });
+    });
+  }
 
   const multiLegFlights = allFlights.map(flights => {
     const legs = Array.isArray(flights) ? flights : [flights];
@@ -75,7 +83,6 @@ exports.getAllMultiLegFlight = catchAsync(async(req, res, next) => {
       airplaneCompanyrecieve: legs[legs.length - 1].airplaneCompany,
     };
   });
-
 
   res.status(200).json({
     status: 'success',
