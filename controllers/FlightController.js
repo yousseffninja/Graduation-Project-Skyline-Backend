@@ -68,9 +68,6 @@ exports.getAllMultiLegFlight = catchAsync(async(req, res, next) => {
     const firstDate = legs[0].date;
     const lastDate = legs[legs.length - 1].date;
 
-    console.log(`First flight date: ${firstDate}, Last flight date: ${lastDate}`);
-
-
     return {
       flightNo: legs.map(leg => leg.flightNo).join('-'),
       type: 'Multi Destination',
@@ -161,7 +158,7 @@ exports.generateRoundTripFlights = catchAsync(async (req, res, next) => {
 });
 
 exports.findRoundTripFlights = catchAsync(async (req, res, next) => {
-  const { from, to } = req.query;
+  const { from, to, firstDate, lastDate } = req.query;
 
   let outboundFlights;
 
@@ -202,11 +199,20 @@ exports.findRoundTripFlights = catchAsync(async (req, res, next) => {
     }
 
     if (returnFlight) {
-      roundTripFlights.push({
-        outboundFlight,
-        returnFlight
-      });
-      includedFlights.add(returnFlight._id.toString());
+
+      const flights = [outboundFlight, returnFlight].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const firstFlightDate = flights[0].date;
+      const lastFlightDate = flights[flights.length - 1].date;
+
+      if ((!firstDate || new Date(firstFlightDate) >= new Date(firstDate)) && (!lastDate || new Date(lastFlightDate) <= new Date(lastDate))) {
+        roundTripFlights.push({
+          outboundFlight,
+          returnFlight,
+          firstDate: firstFlightDate,
+          lastDate: lastFlightDate
+        });
+        includedFlights.add(returnFlight._id.toString());
+      }
     }
   }
 
