@@ -44,7 +44,7 @@ exports.CreateFlight = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllMultiLegFlight = catchAsync(async(req, res, next) => {
-  const { from, to, fromDate, toDate } = req.query;
+  const { from, to, fromDate, toDate , firstDate, lastDate} = req.query;
 
   let allFlights = await findConnectingFlights(from || "", to || "");
 
@@ -56,12 +56,20 @@ exports.getAllMultiLegFlight = catchAsync(async(req, res, next) => {
     });
   }
 
-  const multiLegFlights = allFlights.map(flights => {
+  let multiLegFlights = allFlights.map(flights => {
     const legs = Array.isArray(flights) ? flights : [flights];
     const price = legs.reduce((sum, leg) => sum + leg.price, 0);
     const rating = legs.reduce((sum, leg) => sum + leg.rating, 0) / legs.length;
     const ratingsQuantity = legs.reduce((sum, leg) => sum + leg.ratingsQuantity, 0);
     const ratingsAverage = legs.reduce((sum, leg) => sum + leg.ratingsAverage, 0) / legs.length;
+
+    legs.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    const firstDate = legs[0].date;
+    const lastDate = legs[legs.length - 1].date;
+
+    console.log(`First flight date: ${firstDate}, Last flight date: ${lastDate}`);
+
 
     return {
       flightNo: legs.map(leg => leg.flightNo).join('-'),
@@ -79,10 +87,23 @@ exports.getAllMultiLegFlight = catchAsync(async(req, res, next) => {
       rating,
       ratingsQuantity,
       ratingsAverage,
+      firstDate: firstDate || new Date(),
+      lastDate: lastDate || new Date((new Date()).getTime() + 30*24*60*60*1000),
       airplaneCompany: legs[0].airplaneCompany,
       airplaneCompanyrecieve: legs[legs.length - 1].airplaneCompany,
     };
   });
+
+  if (firstDate && lastDate) {
+    multiLegFlights = multiLegFlights.filter(flight => {
+      const flightFirstDate = new Date(flight.firstDate);
+      const flightLastDate = new Date(flight.lastDate);
+      const queryFirstDate = new Date(firstDate);
+      const queryLastDate = new Date(lastDate);
+
+      return flightFirstDate >= queryFirstDate && flightLastDate <= queryLastDate;
+    });
+  }
 
   res.status(200).json({
     status: 'success',
