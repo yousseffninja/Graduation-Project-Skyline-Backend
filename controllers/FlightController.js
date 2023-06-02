@@ -44,7 +44,7 @@ exports.CreateFlight = catchAsync(async (req, res, next) => {
 });
 
 exports.getAllMultiLegFlight = catchAsync(async(req, res, next) => {
-  const { from, to } = req.body;
+  const { from, to } = req.query;
 
   const allFlights = await findConnectingFlights(from, to);
 
@@ -58,14 +58,14 @@ exports.getAllMultiLegFlight = catchAsync(async(req, res, next) => {
     return {
       flightNo: legs.map(leg => leg.flightNo).join('-'),
       type: 'Multi Destination',
-      classes: legs[0].classes,
-      from: legs[0].from,
-      to: legs[legs.length - 1].to,
-      fromDate: legs[0].fromDate,
-      toDate: legs[legs.length - 1].toDate,
-      date: legs[0].date,
-      sala: legs[0].sala,
-      gate: legs[0].gate,
+      classes: legs[0]?.classes,
+      from: legs[0]?.from,
+      to: legs[legs.length - 1]?.to,
+      fromDate: legs[0]?.fromDate,
+      toDate: legs[legs.length - 1]?.toDate,
+      date: legs[0]?.date || legs[1]?.date,
+      sala: legs[0]?.sala,
+      gate: legs[0]?.gate,
       maxBagPerPerson: legs.reduce((min, leg) => Math.min(min, leg.maxBagPerPerson), Infinity),
       price,
       rating,
@@ -79,6 +79,7 @@ exports.getAllMultiLegFlight = catchAsync(async(req, res, next) => {
 
   res.status(200).json({
     status: 'success',
+    length: multiLegFlights.length,
     multiLegFlights,
     allFlights
   });
