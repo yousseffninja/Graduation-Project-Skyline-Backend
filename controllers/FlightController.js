@@ -132,24 +132,50 @@ exports.findRoundTripFlights = catchAsync(async (req, res, next) => {
 
   console.log(from, to);
 
-  const outboundFlights = await Flight.find({
-    from,
-    to,
-    type: 'Round Trip'
-  }).select('-Seats');
+  let outboundFlights;
+
+  if (from && to) {
+    outboundFlights = await Flight.find({
+      from,
+      to,
+      type: 'Round Trip'
+    }).select('-Seats');
+  } else {
+    outboundFlights = await Flight.find({
+      type: 'Round Trip'
+    }).select('-Seats');
+  }
 
   const roundTripFlights = [];
+  const includedFlights = new Set();
+
   for (const outboundFlight of outboundFlights) {
-    const returnFlight = await Flight.findOne({
-      from: to,
-      to: from,
-      roundTrip: outboundFlight._id
-    }).select('-Seats');
+    if (includedFlights.has(outboundFlight._id.toString())) {
+      continue;
+    }
+
+    let returnFlight;
+
+    if (from && to) {
+      returnFlight = await Flight.findOne({
+        from: to,
+        to: from,
+        roundTrip: outboundFlight._id
+      }).select('-Seats');
+    } else {
+      returnFlight = await Flight.findOne({
+        from: outboundFlight.to,
+        to: outboundFlight.from,
+        roundTrip: outboundFlight._id
+      }).select('-Seats');
+    }
+
     if (returnFlight) {
       roundTripFlights.push({
         outboundFlight,
         returnFlight
       });
+      includedFlights.add(returnFlight._id.toString());
     }
   }
 
