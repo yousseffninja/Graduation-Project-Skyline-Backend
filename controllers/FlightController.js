@@ -88,6 +88,8 @@ exports.getAllMultiLegFlight = catchAsync(async(req, res, next) => {
 exports.generateRoundTripFlights = catchAsync(async (req, res, next) => {
   const { from, to, flightNoSend, flightNoREceive, airplaneCompany, airplaneCompanyrecieve, price, maxBagPerPerson, gate } = req.body;
 
+  const d = Date();
+
   const outboundFlight = await Flight.create({
     flightNo: flightNoSend,
     from,
@@ -96,6 +98,7 @@ exports.generateRoundTripFlights = catchAsync(async (req, res, next) => {
     airplaneCompany: airplaneCompany,
     airplaneCompanyrecieve: airplaneCompanyrecieve,
     price: price,
+    date: new Date(),
     maxBagPerPerson: maxBagPerPerson,
     gate: gate,
     classes: 'Economy',
@@ -108,6 +111,7 @@ exports.generateRoundTripFlights = catchAsync(async (req, res, next) => {
     airplaneCompany: airplaneCompanyrecieve,
     airplaneCompanyrecieve: airplaneCompany,
     price: price,
+    date: new Date((new Date()).getTime() + 30*24*60*60*1000),
     maxBagPerPerson: maxBagPerPerson,
     gate: gate,
     classes: 'Economy',
@@ -129,8 +133,6 @@ exports.generateRoundTripFlights = catchAsync(async (req, res, next) => {
 
 exports.findRoundTripFlights = catchAsync(async (req, res, next) => {
   const { from, to } = req.query;
-
-  console.log(from, to);
 
   let outboundFlights;
 
@@ -181,6 +183,7 @@ exports.findRoundTripFlights = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
+    length: roundTripFlights.length,
     data: roundTripFlights
   });
 });
