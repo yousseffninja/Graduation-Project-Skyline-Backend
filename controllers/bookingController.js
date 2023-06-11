@@ -1,10 +1,12 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
+const axios = require('axios');
 const Tour = require('./../models/tourModel');
 const Flight = require('./../models/flghtModel');
 const Orders = require('./../models/orderHistory');
 const Users = require('./../models/userModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
+const { token } = require('morgan');
 
 const htmlSuccess = "<!DOCTYPE html>\n" +
   "<html>\n" +
@@ -33,6 +35,93 @@ const htmlSuccess = "<!DOCTYPE html>\n" +
   "\t<p>Thank you for your payment.</p>\n" +
   "</body>\n" +
   "</html>\n";
+
+async function generatePaymentToken (){
+  const requestData = {
+    "api_key": process.env.PAYMOB_API_KEY
+  }
+
+  const response = await axios.post(process.env.PAYMOB_URL, requestData, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  return response.data.token;
+}
+
+exports.payment = catchAsync(async (req, res, next) => {
+  const flightId = req.params.flightId;
+  const seatId = req.params.seatID;
+  const userId = req.params.userID;
+
+
+  const flight = await Flight.findById(flightId);
+  const user = await Users.findById(userId)
+
+  const paymobToken = await generatePaymentToken()
+
+  if (!paymobToken) {
+    return next(new AppError("Payment Failed !", 402));
+  }
+
+  const requestData = {
+    "auth_token": paymobToken,
+    "delivery_needed": "false",
+    "amount_cents": `${flight.price * 100}`,
+    "currency": "EGP",
+    "items": [
+      {
+        "name": flight.flightNo,
+        "amount_cents": flight.price,
+        "quantity": "1"
+      }
+    ]
+  }
+
+  const responseData = await axios.post(process.env.PAYMOB_REGISTRATION_URL, requestData, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  const id = responseData.data.id
+
+  console.log("id", id)
+
+  const paymentJSON = {
+    "auth_token": paymobToken,
+    "amount_cents": `${flight.price * 100}`,
+    "expiration": 360000,
+    "order_id": id,
+    "billing_data": {
+      "apartment": "803",
+      "email": "claudette09@exa.com",
+      "floor": "42",
+      "first_name": "Clifford",
+      "street": "Ethan Land",
+      "building": "8028",
+      "phone_number": "+86(8)9135210487",
+      "shipping_method": "PKG",
+      "postal_code": "01898",
+      "city": "Jaskolskiburgh",
+      "country": "CR",
+      "last_name": "Nicolas",
+      "state": "Utah"
+    },
+    "currency": "EGP",
+    "integration_id": process.env.PAYMOB_INTEGRATION_ID,
+  }
+
+  const response = await axios.post(process.env.PAYMOB_PAYMENT_KEY_REQUEST_URL, paymentJSON, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  const data = response.data.token
+
+  res.redirect(`https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`)
+})
 
 exports.getCheckoutSessionTour = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.tourId);

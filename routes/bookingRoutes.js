@@ -12,8 +12,8 @@ router.get(
 
 router.get(
   '/checkout-session/flights/:flightId/:seatID/:userID',
-  authController.protect,
-  bookingController.getCheckoutSessionFlight
+  // authController.protect,
+  bookingController.payment
 );
 
 router.get(
