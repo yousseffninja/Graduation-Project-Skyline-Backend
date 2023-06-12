@@ -136,8 +136,6 @@ exports.payment = catchAsync(async (req, res, next) => {
     return next(new AppError("Flight Seat is not available"));
   }
 
-  console.log(responseData)
-
   await Ticket.create({
     price: flight.price,
     flight: flightId,
@@ -151,19 +149,19 @@ exports.payment = catchAsync(async (req, res, next) => {
 })
 
 exports.paymentSuccess = catchAsync(async (req, res, next) => {
-  const { order } = req.query;
-  console.log(order);
-  const ticket = await Ticket.find({ orderId: order });
-  const seatId = ticket.seatId;
-  const flightId = ticket.flight;
-  const userId = ticket.user;
+  const { profile_id } = req.query;
+  console.log(profile_id);
+  const ticket = await Ticket.find({ orderId: profile_id });
+  const seatId = ticket[0].seatId;
+  const flightId = ticket[0].flight;
+  const userId = ticket[0].user;
   const flight = await Flight.findById(flightId);
+  console.log(ticket)
   const seats = flight.Seats
   for (const row of Object.values(seats)) {
     for (const seat of row) {
       if (seat.id === seatId) {
         seat.empty = false;
-        return true; // Seat found and updated
       }
     }
   }
@@ -171,12 +169,12 @@ exports.paymentSuccess = catchAsync(async (req, res, next) => {
     Seats: seats
   });
 
-  const newTicket = await Ticket.findOneAndUpdate({ orderId: order }, {
+  const newTicket = await Ticket.findOneAndUpdate({ orderId: profile_id }, {
     paymentStatus: true,
   })
 
   await Users.findByIdAndUpdate(userId, {
-    $push: { "tickets": order.id }
+    $push: { "tickets": newTicket.id }
   });
 
   res.status(201).type("html").send(htmlSuccess);
