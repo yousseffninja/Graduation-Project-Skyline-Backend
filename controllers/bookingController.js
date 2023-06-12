@@ -136,12 +136,14 @@ exports.payment = catchAsync(async (req, res, next) => {
     return next(new AppError("Flight Seat is not available"));
   }
 
+  console.log(responseData)
+
   await Ticket.create({
     price: flight.price,
     flight: flightId,
     seatId: seatId,
     user: userId,
-    orderId: id,
+    orderId: responseData.data.merchant.id,
     paymentStatus: false,
 })
 
@@ -150,6 +152,7 @@ exports.payment = catchAsync(async (req, res, next) => {
 
 exports.paymentSuccess = catchAsync(async (req, res, next) => {
   const { order } = req.query;
+  console.log(order);
   const ticket = await Ticket.find({ orderId: order });
   const seatId = ticket.seatId;
   const flightId = ticket.flight;
