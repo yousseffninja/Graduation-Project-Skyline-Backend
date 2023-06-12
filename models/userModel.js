@@ -93,6 +93,10 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'order_history',
   }],
+  tickets: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'ticket',
+  }],
   emailActive: {
     type: Boolean,
     default: false,

@@ -4,9 +4,10 @@ const Tour = require('./../models/tourModel');
 const Flight = require('./../models/flghtModel');
 const Orders = require('./../models/orderHistory');
 const Users = require('./../models/userModel');
+const Ticket = require('./../models/ticketModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
-const { token } = require('morgan');
+const mongoose = require('mongoose');
 
 const htmlSuccess = "<!DOCTYPE html>\n" +
   "<html>\n" +
@@ -36,6 +37,20 @@ const htmlSuccess = "<!DOCTYPE html>\n" +
   "</body>\n" +
   "</html>\n";
 
+async function checkSeatAvailablity(flightId, seatId) {
+  const flight = await Flight.findById(flightId);
+  const seats = flight.Seats
+
+  for (const row of Object.values(seats)) {
+    for (const seat of row) {
+      if (seat.id === seatId) {
+        return !seat.empty;
+      }
+    }
+  }
+  return false;
+}
+
 async function generatePaymentToken (){
   const requestData = {
     "api_key": process.env.PAYMOB_API_KEY
@@ -54,9 +69,8 @@ exports.payment = catchAsync(async (req, res, next) => {
   const seatId = req.params.seatID;
   const userId = req.params.userID;
 
-
   const flight = await Flight.findById(flightId);
-  const user = await Users.findById(userId)
+  const user = await Users.findById(userId);
 
   const paymobToken = await generatePaymentToken()
 
@@ -85,8 +99,6 @@ exports.payment = catchAsync(async (req, res, next) => {
   });
 
   const id = responseData.data.id
-
-  console.log("id", id)
 
   const paymentJSON = {
     "auth_token": paymobToken,
@@ -120,8 +132,52 @@ exports.payment = catchAsync(async (req, res, next) => {
 
   const data = response.data.token
 
+  if (!checkSeatAvailablity(flightId, seatId, userId)) {
+    return next(new AppError("Flight Seat is not available"));
+  }
+
+  await Ticket.create({
+    price: flight.price,
+    flight: flightId,
+    seatId: seatId,
+    user: userId,
+    orderId: id,
+    paymentStatus: false,
+})
+
   res.redirect(`https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`)
 })
+
+exports.paymentSuccess = catchAsync(async (req, res, next) => {
+  const { order } = req.query;
+  const ticket = await Ticket.find({ orderId: order });
+  const seatId = ticket.seatId;
+  const flightId = ticket.flight;
+  const userId = ticket.user;
+  const flight = await Flight.findById(flightId);
+  const seats = flight.Seats
+  for (const row of Object.values(seats)) {
+    for (const seat of row) {
+      if (seat.id === seatId) {
+        seat.empty = false;
+        return true; // Seat found and updated
+      }
+    }
+  }
+  await Flight.findByIdAndUpdate(flightId, {
+    Seats: seats
+  });
+
+  const newTicket = await Ticket.findOneAndUpdate({ orderId: order }, {
+    paymentStatus: true,
+  })
+
+  await Users.findByIdAndUpdate(userId, {
+    $push: { "tickets": order.id }
+  });
+
+  res.status(201).type("html").send(htmlSuccess);
+});
 
 exports.getCheckoutSessionTour = catchAsync(async (req, res, next) => {
   const tour = await Tour.findById(req.params.tourId);

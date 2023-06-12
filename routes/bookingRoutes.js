@@ -17,10 +17,15 @@ router.get(
 );
 
 router.get(
-  '/success/:flightId/:seatID/:userID',
-  authController.protect,
-  bookingController.flightBookingSuccess
+  '/success/',
+  bookingController.paymentSuccess
 )
+
+// router.get(
+//   '/success/:flightId/:seatID/:userID',
+//   authController.protect,
+//   bookingController.flightBookingSuccess
+// )
 
 router.get(
   '/redirect/:flightId/:seatID/:userID',
