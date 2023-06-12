@@ -89,11 +89,13 @@ router.delete(
   userController.deleteMe
 );
 
-
-
 router
   .route('/')
-  .get(authController.restrictTo('admin'), userController.getAllUsers)
+  .get(
+    authController.protect,
+    authController.restrictTo('admin'),
+    userController.getAllUsers
+  )
 
 router
   .route('/:id')
