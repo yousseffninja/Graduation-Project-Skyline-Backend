@@ -21,6 +21,11 @@ router.get(
   // authController.protect,
   bookingController.paymentRoundTrip
 );
+router.get(
+  '/multi-destination/flights/',
+  // authController.protect,
+  bookingController.paymentmuliDestination
+);
 
 router.get(
   '/success/',

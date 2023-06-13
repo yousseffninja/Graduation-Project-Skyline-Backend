@@ -117,6 +117,26 @@ async function generatePaymentIdRoundTripe(paymobToken, departureflightNo, depar
   return responseData.data
 }
 
+async function generatePaymentIdMuliDestination(paymobToken, flightsNo, flightPrices, finalPrice) {
+  const items = flightsNo.map((name, index) => ({ name, amount_cents: flightPrices[index], quantity: "1" }));
+  console.log(items)
+  const requestData = {
+    "auth_token": paymobToken,
+    "delivery_needed": "false",
+    "amount_cents": `${finalPrice * 100}`,
+    "currency": "EGP",
+    "items": items,
+  }
+
+  const responseData = await axios.post(process.env.PAYMOB_REGISTRATION_URL, requestData, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  return responseData.data
+}
+
 async function generatePaymentToken (paymobToken, price, id){
   const paymentJSON = {
     "auth_token": paymobToken,
@@ -235,6 +255,55 @@ exports.paymentRoundTrip = catchAsync(async (req, res, next) => {
     price: (departureflightPrice + arrivalflightPrice),
     flight: [departureFlightId, arrivalFlightId],
     type: 'round-trip',
+    seatId: seatId,
+    user: userId,
+    orderId: id.merchant.id,
+    paymentStatus: false,
+  })
+
+  res.redirect(`https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`)
+})
+
+exports.paymentmuliDestination = catchAsync(async (req, res, next) => {
+  const { flightsIds, seatId, userId } = req.body;
+
+  const flights = await Flight.find({ _id: { $in: flightsIds } });
+  // console.log(flights);
+  const flightsNo = flights.map(obj => obj.flightNo)
+  const flightPrices = flights.map(obj => obj.price)
+  const finalPrice = flights.reduce((sum, obj) => sum + obj.price, 0);
+
+  const paymobToken = await generatePaymobToken()
+
+  if (!paymobToken) {
+    return next(new AppError("Payment Failed !", 402));
+  }
+
+  const id = await generatePaymentIdMuliDestination(paymobToken, flightsNo, flightPrices, finalPrice);
+  console.log(id)
+
+  if (!id) {
+    return next(new AppError("Payment Failed !", 402));
+  }
+
+  const data = await generatePaymentToken(paymobToken, finalPrice, id.id)
+
+  if (!data) {
+    return next(new AppError("Payment Failed !", 402));
+  }
+
+  flights.forEach(e => {
+    if (!checkSeatAvailablity(e.id, seatId, userId)) {
+      return next(new AppError("Flight Seat is not available"));
+    }
+  })
+
+
+
+  await Ticket.create({
+    price: finalPrice,
+    flight: flightsIds,
+    type: 'multi-destination',
     seatId: seatId,
     user: userId,
     orderId: id.merchant.id,
