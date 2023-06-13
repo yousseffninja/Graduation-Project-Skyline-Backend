@@ -149,7 +149,13 @@ async function generatePaymentIdMuliDestination(paymobToken, flightsNo, flightPr
     "delivery_needed": "false",
     "amount_cents": `${finalPrice * 100}`,
     "currency": "EGP",
-    "items": items,
+    "items": [
+      {
+        "name": "hotelName",
+        "amount_cents": "300",
+        "quantity": "1"
+      }
+    ],
   }
 
   const responseData = await axios.post(process.env.PAYMOB_REGISTRATION_URL, requestData, {
