@@ -16,18 +16,18 @@ router.get(
   bookingController.payment
 );
 
-router.get(
+router.post(
   '/round-trip/flights/',
   // authController.protect,
   bookingController.paymentRoundTrip
 );
-router.get(
+router.post(
   '/multi-destination/flights/',
   // authController.protect,
   bookingController.paymentmuliDestination
 );
 
-router.get(
+router.post(
   '/hotel/flights/',
   bookingController.paymentHotel
 )

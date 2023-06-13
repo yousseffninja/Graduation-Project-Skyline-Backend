@@ -248,6 +248,8 @@ exports.paymentRoundTrip = catchAsync(async (req, res, next) => {
   const departureFlight = await Flight.findById(departureFlightId);
   const arrivalFlight = await Flight.findById(arrivalFlightId);
 
+
+
   const paymobToken = await generatePaymobToken()
   const departureflightNo = departureFlight.flightNo;
   const departureflightPrice = departureFlight.price;
