@@ -11,9 +11,15 @@ router.get(
 );
 
 router.get(
-  '/checkout-session/flights/:flightId/:seatID/:userID',
+  '/checkout-session/flights/:flightId/:seatId/:userId',
   // authController.protect,
   bookingController.payment
+);
+
+router.get(
+  '/round-trip/flights/',
+  // authController.protect,
+  bookingController.paymentRoundTrip
 );
 
 router.get(
@@ -26,10 +32,5 @@ router.get(
 //   authController.protect,
 //   bookingController.flightBookingSuccess
 // )
-
-router.get(
-  '/redirect/:flightId/:seatID/:userID',
-  bookingController.flightBookingSuccess
-)
 
 module.exports = router;

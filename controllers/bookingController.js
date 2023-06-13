@@ -51,7 +51,7 @@ async function checkSeatAvailablity(flightId, seatId) {
   return false;
 }
 
-async function generatePaymentToken (){
+async function generatePaymobToken (){
   const requestData = {
     "api_key": process.env.PAYMOB_API_KEY
   }
@@ -64,29 +64,16 @@ async function generatePaymentToken (){
   return response.data.token;
 }
 
-exports.payment = catchAsync(async (req, res, next) => {
-  const flightId = req.params.flightId;
-  const seatId = req.params.seatID;
-  const userId = req.params.userID;
-
-  const flight = await Flight.findById(flightId);
-  const user = await Users.findById(userId);
-
-  const paymobToken = await generatePaymentToken()
-
-  if (!paymobToken) {
-    return next(new AppError("Payment Failed !", 402));
-  }
-
+async function generatePaymentId (paymobToken, price, name){
   const requestData = {
     "auth_token": paymobToken,
     "delivery_needed": "false",
-    "amount_cents": `${flight.price * 100}`,
+    "amount_cents": `${price * 100}`,
     "currency": "EGP",
     "items": [
       {
-        "name": flight.flightNo,
-        "amount_cents": flight.price,
+        "name": name,
+        "amount_cents": price,
         "quantity": "1"
       }
     ]
@@ -98,11 +85,42 @@ exports.payment = catchAsync(async (req, res, next) => {
     }
   });
 
-  const id = responseData.data.id
+  return responseData.data
+}
 
+async function generatePaymentIdRoundTripe(paymobToken, departureflightNo, departureflightPrice, arrivalflightNo, arrivalflightPrice){
+  const requestData = {
+    "auth_token": paymobToken,
+    "delivery_needed": "false",
+    "amount_cents": `${(departureflightPrice + arrivalflightPrice) * 100}`,
+    "currency": "EGP",
+    "items": [
+      {
+        "name": departureflightNo,
+        "amount_cents": departureflightPrice,
+        "quantity": "1"
+      },
+      {
+        "name": arrivalflightNo,
+        "amount_cents": arrivalflightPrice,
+        "quantity": "1"
+      },
+    ]
+  }
+
+  const responseData = await axios.post(process.env.PAYMOB_REGISTRATION_URL, requestData, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  return responseData.data
+}
+
+async function generatePaymentToken (paymobToken, price, id){
   const paymentJSON = {
     "auth_token": paymobToken,
-    "amount_cents": `${flight.price * 100}`,
+    "amount_cents": `${price * 100}`,
     "expiration": 360000,
     "order_id": id,
     "billing_data": {
@@ -130,7 +148,34 @@ exports.payment = catchAsync(async (req, res, next) => {
     }
   });
 
-  const data = response.data.token
+  return response.data.token
+}
+
+exports.payment = catchAsync(async (req, res, next) => {
+  const { flightId, seatId, userId } = req.params;
+
+  const flight = await Flight.findById(flightId);
+
+  const paymobToken = await generatePaymobToken()
+  const flightNo = flight.flightNo;
+  const flightPrice = flight.price;
+
+  if (!paymobToken) {
+    return next(new AppError("Payment Failed !", 402));
+  }
+
+  const id = await generatePaymentId(paymobToken, flightPrice, flightNo);
+  console.log(id)
+
+  if (!id) {
+    return next(new AppError("Payment Failed !", 402));
+  }
+
+  const data = await generatePaymentToken(paymobToken, flightPrice, id.id)
+
+  if (!data) {
+    return next(new AppError("Payment Failed !", 402));
+  }
 
   if (!checkSeatAvailablity(flightId, seatId, userId)) {
     return next(new AppError("Flight Seat is not available"));
@@ -138,13 +183,65 @@ exports.payment = catchAsync(async (req, res, next) => {
 
   await Ticket.create({
     price: flight.price,
-    flight: flightId,
+    flight: [flightId],
+    type: 'one-way',
     seatId: seatId,
     user: userId,
-    orderId: responseData.data.merchant.id,
+    orderId: id.merchant.id,
     paymentStatus: false,
 })
 
+  res.redirect(`https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`)
+})
+
+exports.paymentRoundTrip = catchAsync(async (req, res, next) => {
+  const { departureFlightId, arrivalFlightId, seatId, userId } = req.body;
+
+  const departureFlight = await Flight.findById(departureFlightId);
+  const arrivalFlight = await Flight.findById(arrivalFlightId);
+
+  const paymobToken = await generatePaymobToken()
+  const departureflightNo = departureFlight.flightNo;
+  const departureflightPrice = departureFlight.price;
+  const arrivalflightNo = arrivalFlight.flightNo;
+  const arrivalflightPrice = arrivalFlight.price;
+
+  if (!paymobToken) {
+    return next(new AppError("Payment Failed !", 402));
+  }
+
+  const id = await generatePaymentIdRoundTripe(paymobToken, departureflightNo, departureflightPrice, arrivalflightNo, arrivalflightPrice);
+  console.log(id)
+
+  if (!id) {
+    return next(new AppError("Payment Failed !", 402));
+  }
+
+  const data = await generatePaymentToken(paymobToken, (departureflightPrice + arrivalflightPrice), id.id)
+
+  if (!data) {
+    return next(new AppError("Payment Failed !", 402));
+  }
+
+  if (!checkSeatAvailablity(departureFlightId, seatId, userId)) {
+    return next(new AppError("Flight Seat is not available"));
+  }
+
+  if (!checkSeatAvailablity(arrivalFlightId, seatId, userId)) {
+    return next(new AppError("Flight Seat is not available"));
+  }
+
+  await Ticket.create({
+    price: (departureflightPrice + arrivalflightPrice),
+    flight: [departureFlightId, arrivalFlightId],
+    type: 'round-trip',
+    seatId: seatId,
+    user: userId,
+    orderId: id.merchant.id,
+    paymentStatus: false,
+  })
+
+  console.log(`https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`)
   res.redirect(`https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`)
 })
 
@@ -211,101 +308,3 @@ exports.getCheckoutSessionTour = catchAsync(async (req, res, next) => {
     session
   });
 });
-
-exports.getCheckoutSessionFlight = catchAsync(async (req, res, next) => {
-  const flight = await Flight.findById(req.params.flightId);
-
-  const session = await stripe.checkout.sessions.create({
-    payment_method_types: ['card'],
-    success_url: `${req.protocol}://${req.get('host')}/api/v1/bookings/redirect/${req.params.flightId}/${req.params.seatID}/${req.params.userID}`,
-    cancel_url: `${req.protocol}://${req.get('host')}/flight`,
-    customer_email: req.user.email,
-    client_reference_id: req.params.flightId,
-    line_items: [
-      {
-        price_data: {
-
-          currency: 'usd',
-          unit_amount: flight.price * 100,
-          product_data: {
-            name: `${flight.from} To ${flight.to}`,
-          }
-        },
-        quantity: 1,
-      }
-    ],
-    mode: 'payment',
-  });
-
-  res.status(200).json({
-    status: 'success',
-    session
-  })
-});
-
-exports.flightBookingSuccess = catchAsync(async (req, res, next) => {
-  const flight = await Flight.findById(req.params.flightId)
-  const seatID = req.params.seatID
-  if (seatID.charAt(0) === "A" || seatID.charAt(0) === "B"){
-    const index = (seatID.charCodeAt(0) - 65) * parseInt(seatID.charAt(1))
-    if (flight.Seats.Row1[index].empty){
-      flight.Seats.Row1[index] = {
-        id: seatID,
-        empty: false,
-        selected: true,
-        userId: req.params.userID,
-      }
-
-      const obj = flight.Seats
-      flight.Seats = obj;
-      await Flight.findByIdAndUpdate(req.params.flightId, {
-        Seats: obj
-      })
-      await flight.save({ validateBeforeSave: false });
-    } else {
-      next(
-        new AppError('This seat is already booked!', 301)
-      );
-    }
-  } else {
-    const index = (seatID.charCodeAt(0) - 67) * parseInt(seatID.charAt(1));
-    if (flight.Seats.Row2[index].empty){
-      flight.Seats.Row2[index] = {
-        id: seatID,
-        empty: false,
-        selected: true,
-        userId: req.params.userID,
-      }
-      const obj = flight.Seats
-      flight.Seats = obj;
-      await Flight.findByIdAndUpdate(req.params.flightId, {
-        Seats: obj
-      })
-      await flight.save({ validateBeforeSave: false });
-    } else {
-      next(
-        new AppError('This seat is already booked!', 301)
-      );
-    }
-  }
-  await flight.save({ validateBeforeSave: false });
-
-  const order = await Orders.create({
-    flight: req.params.flightId,
-    seat: req.params.seatID,
-    price: flight.price,
-    userId: req.params.userID,
-  });
-
-  await Users.findByIdAndUpdate(req.params.userID, {
-    $push: { "orders": order.id }
-  })
-  res.status(201).type("html").send(htmlSuccess);
-});
-
-exports.redirectToMobile = catchAsync(async (req, res, next) => {
-  // res.redirect(`exp://192.168.1.4:19000/--/Home?flightId=${req.params.flightId}&seatID=${req.params.seatID}`)
-  res.status(200).type("html").send(htmlSuccess);
-})
-
-
