@@ -284,8 +284,12 @@ exports.paymentRoundTrip = catchAsync(async (req, res, next) => {
     orderId: id.id,
     paymentStatus: false,
   })
-
-  res.redirect(`https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`)
+  const url = `https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`
+  res.status(201).json({
+    status: "success",
+    url
+  })
+  // res.redirect(`https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`)
 })
 
 exports.paymentmuliDestination = catchAsync(async (req, res, next) => {
