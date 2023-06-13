@@ -28,6 +28,11 @@ router.get(
 );
 
 router.get(
+  '/hotel/flights/',
+  bookingController.paymentHotel
+)
+
+router.get(
   '/success/',
   bookingController.paymentSuccess
 )

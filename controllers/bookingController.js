@@ -2,12 +2,12 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const axios = require('axios');
 const Tour = require('./../models/tourModel');
 const Flight = require('./../models/flghtModel');
-const Orders = require('./../models/orderHistory');
+const Hotel = require('./../models/hotelModel');
+const Room = require('./../models/roomModel');
 const Users = require('./../models/userModel');
 const Ticket = require('./../models/ticketModel');
 const catchAsync = require('./../utils/catchAsync');
 const AppError = require('./../utils/appError');
-const mongoose = require('mongoose');
 
 const htmlSuccess = "<!DOCTYPE html>\n" +
   "<html>\n" +
@@ -117,6 +117,30 @@ async function generatePaymentIdRoundTripe(paymobToken, departureflightNo, depar
   return responseData.data
 }
 
+async function generatePaymentIdHotel(paymobToken, hotelName, finalPrice) {
+  const requestData = {
+    "auth_token": paymobToken,
+    "delivery_needed": "false",
+    "amount_cents": `${finalPrice * 100}`,
+    "currency": "EGP",
+    "items": [
+      {
+        "name": hotelName,
+        "amount_cents": finalPrice,
+        "quantity": "1"
+      }
+    ]
+  }
+
+  const responseData = await axios.post(process.env.PAYMOB_REGISTRATION_URL, requestData, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+
+  return responseData.data
+}
+
 async function generatePaymentIdMuliDestination(paymobToken, flightsNo, flightPrices, finalPrice) {
   const items = flightsNo.map((name, index) => ({ name, amount_cents: flightPrices[index], quantity: "1" }));
   console.log(items)
@@ -207,7 +231,7 @@ exports.payment = catchAsync(async (req, res, next) => {
     type: 'one-way',
     seatId: seatId,
     user: userId,
-    orderId: id.merchant.id,
+    orderId: id.id,
     paymentStatus: false,
 })
 
@@ -257,7 +281,7 @@ exports.paymentRoundTrip = catchAsync(async (req, res, next) => {
     type: 'round-trip',
     seatId: seatId,
     user: userId,
-    orderId: id.merchant.id,
+    orderId: id.id,
     paymentStatus: false,
   })
 
@@ -268,7 +292,6 @@ exports.paymentmuliDestination = catchAsync(async (req, res, next) => {
   const { flightsIds, seatId, userId } = req.body;
 
   const flights = await Flight.find({ _id: { $in: flightsIds } });
-  // console.log(flights);
   const flightsNo = flights.map(obj => obj.flightNo)
   const flightPrices = flights.map(obj => obj.price)
   const finalPrice = flights.reduce((sum, obj) => sum + obj.price, 0);
@@ -306,36 +329,80 @@ exports.paymentmuliDestination = catchAsync(async (req, res, next) => {
     type: 'multi-destination',
     seatId: seatId,
     user: userId,
-    orderId: id.merchant.id,
+    orderId: id.id,
     paymentStatus: false,
   })
 
   console.log(`https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`)
   res.redirect(`https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`)
-})
+});
+
+exports.paymentHotel = catchAsync(async (req, res, next) => {
+  const { hotelId, roomId, userId } = req.body;
+
+  const hotel = await Hotel.findById(hotelId);
+  const room = await Room.findById(roomId);
+  const hotelName = hotel.hotelName
+  const finalPrice = room.price;
+
+  const paymobToken = await generatePaymobToken()
+
+  if (!paymobToken) {
+    return next(new AppError("Payment Failed !", 402));
+  }
+
+  const id = await generatePaymentIdHotel(paymobToken, hotelName, finalPrice);
+
+  if (!id) {
+    return next(new AppError("Payment Failed !", 402));
+  }
+
+  console.log("data", id);
+
+  const data = await generatePaymentToken(paymobToken, finalPrice, id.id)
+
+  if (!data) {
+    return next(new AppError("Payment Failed !", 402));
+  }
+
+
+
+  await Ticket.create({
+    price: finalPrice,
+    hotel: hotelId,
+    type: 'hotel',
+    room: roomId,
+    user: userId,
+    orderId: id.id,
+    paymentStatus: false,
+  })
+  console.log(`https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`)
+  res.redirect(`https://accept.paymobsolutions.com/api/acceptance/iframes/${process.env.PAYMOB_IFRAME_ID}?payment_token=${data}`)
+});
 
 exports.paymentSuccess = catchAsync(async (req, res, next) => {
-  const { profile_id } = req.query;
-  console.log(profile_id);
-  const ticket = await Ticket.find({ orderId: profile_id });
+  const { order } = req.query;
+  const ticket = await Ticket.find({ orderId: order });
   const seatId = ticket[0].seatId;
   const flightId = ticket[0].flight;
   const userId = ticket[0].user;
   const flight = await Flight.findById(flightId);
   console.log(ticket)
-  const seats = flight.Seats
-  for (const row of Object.values(seats)) {
-    for (const seat of row) {
-      if (seat.id === seatId) {
-        seat.empty = false;
+  if (flight) {
+    const seats = flight.Seats
+    for (const row of Object.values(seats)) {
+      for (const seat of row) {
+        if (seat.id === seatId) {
+          seat.empty = false;
+        }
       }
     }
+    await Flight.findByIdAndUpdate(flightId, {
+      Seats: seats
+    });
   }
-  await Flight.findByIdAndUpdate(flightId, {
-    Seats: seats
-  });
 
-  const newTicket = await Ticket.findOneAndUpdate({ orderId: profile_id }, {
+  const newTicket = await Ticket.findOneAndUpdate({ orderId: order }, {
     paymentStatus: true,
   })
 
