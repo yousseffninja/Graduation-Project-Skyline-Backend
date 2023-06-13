@@ -99,8 +99,16 @@ router
 
 router
   .route('/:id')
-  .get(authController.restrictTo('admin'), userController.getUser)
-  .patch(authController.restrictTo('admin'), userController.updateUser)
-  .delete(authController.restrictTo('admin'), userController.deleteUser);
+  .get(userController.getUser)
+  .patch(
+    authController.protect,
+    authController.restrictTo('admin'),
+    userController.updateUser
+  )
+  .delete(
+    authController.protect,
+    authController.restrictTo('admin'),
+    userController.deleteUser
+  );
 
 module.exports = router;
