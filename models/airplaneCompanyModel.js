@@ -15,6 +15,22 @@ const AirplaneCompanySchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide airplane description'],
   },
+  rating: {
+    type: Number,
+    min: 1,
+    max: 5
+  },
+  ratingsQuantity: {
+    type: Number,
+    default: 0
+  },
+  ratingsAverage: {
+    type: Number,
+    default: 1,
+    min: [1, 'Rating must be above 1.0'],
+    max: [5, 'Rating must be below 5.0'],
+    set: val => Math.round(val * 10) / 10
+  },
   flights: {
     type: [{
       type: mongoose.Schema.ObjectId,

@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
-const Flight = require('./flghtModel');
-const { models } = require('mongoose');
+const airplaneCompany = require('./airplaneCompanyModel');
 
 const flightCommentsSchema = new mongoose.Schema({
   comment: {
@@ -16,9 +15,9 @@ const flightCommentsSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  flight: {
+  airplaneCompany: {
     type: mongoose.Schema.ObjectId,
-    ref: 'flights',
+    ref: 'airplane_company',
     required: [true, 'Comment must be assign by flight']
   },
   user: {
@@ -32,7 +31,7 @@ const flightCommentsSchema = new mongoose.Schema({
     toObject: { virtuals: true }
   });
 
-flightCommentsSchema.index({ flight: 1, user: 1 }, { unique: true });
+flightCommentsSchema.index({ airplaneCompany: 1, user: 1 }, { unique: true });
 
 flightCommentsSchema.pre(/^find/, function(next) {
   this.populate({
@@ -45,7 +44,7 @@ flightCommentsSchema.pre(/^find/, function(next) {
 flightCommentsSchema.statics.calcAverageRatings = async function(flightId) {
   const stats = await this.aggregate([
     {
-      $match: { flight: flightId }
+      $match: { airplaneCompany: flightId }
     },
     {
       $group: {
@@ -57,12 +56,12 @@ flightCommentsSchema.statics.calcAverageRatings = async function(flightId) {
   ]);
 
   if (stats.length > 0) {
-    await Flight.findByIdAndUpdate(flightId, {
+    await airplaneCompany.findByIdAndUpdate(flightId, {
       ratingsQuantity: stats[0].nRating,
       ratingsAverage: stats[0].avgRating
     });
   } else {
-    await Flight.findByIdAndUpdate(flightId, {
+    await airplaneCompany.findByIdAndUpdate(flightId, {
       ratingsQuantity: 0,
       ratingsAverage: 1
     })
@@ -70,7 +69,7 @@ flightCommentsSchema.statics.calcAverageRatings = async function(flightId) {
 };
 
 flightCommentsSchema.post('save', function() {
-  this.constructor.calcAverageRatings(this.flight);
+  this.constructor.calcAverageRatings(this.airplaneCompany);
 });
 
 flightCommentsSchema.pre(/^findOneAnd/, async function(next) {
