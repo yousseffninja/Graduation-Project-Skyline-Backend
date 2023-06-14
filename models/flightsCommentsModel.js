@@ -51,7 +51,7 @@ flightCommentsSchema.statics.calcAverageRatings = async function(flightId) {
       $group: {
         _id: '$flight',
         nRating: { $sum: 1 },
-        avgRating: { $avg: '$rating' }
+        avgRating: { $avg: '$rate' }
       }
     }
   ]);
