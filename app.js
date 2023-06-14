@@ -20,6 +20,7 @@ const flightsRouter = require('./routes/FlightRoutes');
 const HotelRouter= require('./routes/hotelRoutes');
 const roomsRouter = require('./routes/roomRoutes');
 const flightCommentsRouter = require('./routes/flightCommentsRoutes');
+const ticketsRouter = require('./routes/ticketsRoutes');
 
 const app = express();
 
@@ -91,6 +92,7 @@ app.use('/api/v1/flights', flightsRouter);
 app.use('/api/v1/hotels', HotelRouter);
 app.use('/api/v1/rooms', roomsRouter);
 app.use('/api/v1/flights-comments', flightCommentsRouter);
+app.use('/api/v1/tickets', ticketsRouter);
 
 app.all('*', (req, res, next) => {
     next(new AppError(`Can't find ${req.originalUrl} on this server!`, 404));
