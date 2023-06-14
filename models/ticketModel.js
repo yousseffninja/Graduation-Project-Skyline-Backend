@@ -20,6 +20,10 @@ const ticketModel = new mongoose.Schema({
     type: mongoose.Schema.ObjectId,
     ref: 'room',
   },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
   type: String,
   user: {
     type: mongoose.Schema.ObjectId,
