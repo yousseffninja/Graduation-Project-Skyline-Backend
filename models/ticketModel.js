@@ -5,17 +5,15 @@ const ticketModel = new mongoose.Schema({
     type: Number,
     required: [true, 'Please provide ticket price'],
   },
-  flight: [{
-    type: mongoose.Schema.ObjectId,
-    ref: 'flights',
-  }],
+  // flight: [{
+  //   type: mongoose.Schema.ObjectId,
+  //   ref: 'flights',
+  // }],
+  flight: [Object],
   seatId: {
     type: String,
   },
-  hotel: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'hotel',
-  },
+  hotel: Object,
   room: {
     type: mongoose.Schema.ObjectId,
     ref: 'room',

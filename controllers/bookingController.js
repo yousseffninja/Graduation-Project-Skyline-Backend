@@ -233,7 +233,7 @@ exports.payment = catchAsync(async (req, res, next) => {
 
   await Ticket.create({
     price: flight.price,
-    flight: [flightId],
+    flight: [flight],
     type: 'one-way',
     seatId: seatId,
     user: userId,
@@ -289,7 +289,7 @@ exports.paymentRoundTrip = catchAsync(async (req, res, next) => {
 
   await Ticket.create({
     price: (departureflightPrice + arrivalflightPrice),
-    flight: [departureFlightId, arrivalFlightId],
+    flight: [departureFlight, arrivalFlight],
     type: 'round-trip',
     seatId: seatId,
     user: userId,
@@ -341,7 +341,7 @@ exports.paymentmuliDestination = catchAsync(async (req, res, next) => {
 
   await Ticket.create({
     price: finalPrice,
-    flight: flightsIds,
+    flight: flights,
     type: 'multi-destination',
     seatId: seatId,
     user: userId,
@@ -388,7 +388,7 @@ exports.paymentHotel = catchAsync(async (req, res, next) => {
 
   await Ticket.create({
     price: finalPrice,
-    hotel: hotelId,
+    hotel: hotel,
     type: 'hotel',
     room: roomId,
     user: userId,
