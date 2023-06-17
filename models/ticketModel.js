@@ -14,10 +14,7 @@ const ticketModel = new mongoose.Schema({
     type: String,
   },
   hotel: Object,
-  room: {
-    type: mongoose.Schema.ObjectId,
-    ref: 'room',
-  },
+  room: Object,
   createdAt: {
     type: Date,
     default: Date.now

@@ -28,7 +28,7 @@ router.post(
 );
 
 router.post(
-  '/hotel/flights/',
+  '/hotel/rooms',
   bookingController.paymentHotel
 )
 

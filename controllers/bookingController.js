@@ -360,9 +360,11 @@ exports.paymentHotel = catchAsync(async (req, res, next) => {
   const { hotelId, roomId, userId } = req.body;
 
   const hotel = await Hotel.findById(hotelId);
-  const room = await Room.findById(roomId);
+  const rooms = await Room.find({ _id: { $in: roomId } });
+  console.log(rooms)
   const hotelName = hotel.hotelName
-  const finalPrice = room.price;
+  const roomsPrices = rooms.map(obj => obj.price)
+  const finalPrice = rooms.reduce((sum, obj) => sum + obj.price, 0);
 
   const paymobToken = await generatePaymobToken()
 
@@ -390,7 +392,7 @@ exports.paymentHotel = catchAsync(async (req, res, next) => {
     price: finalPrice,
     hotel: hotel,
     type: 'hotel',
-    room: roomId,
+    room: rooms,
     user: userId,
     orderId: id.id,
     paymentStatus: false,
