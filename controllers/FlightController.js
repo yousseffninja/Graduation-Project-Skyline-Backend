@@ -126,9 +126,9 @@ exports.generateRoundTripFlights = catchAsync(async (req, res, next) => {
   const newDate = new Date(new Date().getTime() + 60*24*60*60*1000);
 
 // Get the year, month, and day from the Date object
-  const newyear = currentDate.getFullYear();
-  const newmonth = String(currentDate.getMonth() + 1).padStart(2, '0'); // Month is zero-based, so we add 1
-  const newday = String(currentDate.getDate()).padStart(2, '0');
+  const newyear = newDate.getFullYear();
+  const newmonth = String(newDate.getMonth() + 1).padStart(2, '0'); // Month is zero-based, so we add 1
+  const newday = String(newDate.getDate()).padStart(2, '0');
 
   const newformattedDate = `${newyear}-${newmonth}-${newday}`;
 
