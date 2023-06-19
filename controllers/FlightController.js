@@ -114,7 +114,23 @@ exports.getAllMultiLegFlight = catchAsync(async(req, res, next) => {
 exports.generateRoundTripFlights = catchAsync(async (req, res, next) => {
   const { from, to, flightNoSend, flightNoREceive, airplaneCompany, airplaneCompanyrecieve, price, maxBagPerPerson, gate } = req.body;
 
-  const d = Date();
+  const currentDate = new Date(new Date().getTime() + 30*24*60*60*1000);
+
+// Get the year, month, and day from the Date object
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Month is zero-based, so we add 1
+  const day = String(currentDate.getDate()).padStart(2, '0');
+
+  const formattedDate = `${year}-${month}-${day}`;
+
+  const newDate = new Date(new Date().getTime() + 30*24*60*60*1000);
+
+// Get the year, month, and day from the Date object
+  const newyear = currentDate.getFullYear();
+  const newmonth = String(currentDate.getMonth() + 1).padStart(2, '0'); // Month is zero-based, so we add 1
+  const newday = String(currentDate.getDate()).padStart(2, '0');
+
+  const newformattedDate = `${newyear}-${newmonth}-${newday}`;
 
   const outboundFlight = await Flight.create({
     flightNo: flightNoSend,
@@ -124,7 +140,7 @@ exports.generateRoundTripFlights = catchAsync(async (req, res, next) => {
     airplaneCompany: airplaneCompany,
     airplaneCompanyrecieve: airplaneCompanyrecieve,
     price: price,
-    date: new Date(),
+    date: formattedDate,
     maxBagPerPerson: maxBagPerPerson,
     gate: gate,
     classes: 'Economy',
@@ -137,7 +153,7 @@ exports.generateRoundTripFlights = catchAsync(async (req, res, next) => {
     airplaneCompany: airplaneCompanyrecieve,
     airplaneCompanyrecieve: airplaneCompany,
     price: price,
-    date: new Date((new Date()).getTime() + 30*24*60*60*1000),
+    date: newformattedDate,
     maxBagPerPerson: maxBagPerPerson,
     gate: gate,
     classes: 'Economy',
